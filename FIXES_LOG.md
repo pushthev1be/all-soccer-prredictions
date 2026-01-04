@@ -4,6 +4,65 @@
 
 ---
 
+### [2026-01-04] - CSP Configuration Fix for React Hydration
+
+**Issues Fixed:**
+1. Content Security Policy (CSP) in `next.config.js` was blocking inline scripts
+2. React hydration failing, causing sign-in form to fall back to plain HTML behavior
+3. Form submissions doing GET requests instead of calling JavaScript event handlers
+
+**Description:**
+- The `next.config.js` had `script-src 'self' 'unsafe-eval'` but was missing `'unsafe-inline'`
+- This blocked Next.js/React from hydrating properly, breaking all client-side JavaScript
+- Added `'unsafe-inline'` to `script-src` directive
+- Added missing directives for `style-src`, `img-src`, and `font-src`
+
+**Root Cause Analysis:**
+- There were two config files: `next.config.js` and `next.config.ts`
+- Next.js was using `next.config.js` which had the stricter CSP
+- The `.ts` config had the correct CSP but was being ignored
+
+**Files Modified:**
+- `next.config.js` - Updated CSP to include `'unsafe-inline'` in script-src
+
+**Testing Notes:**
+- After fix: No CSP errors in browser console
+- Form submission works correctly (button shows "Signing in..." state)
+- Verification tokens are created in database successfully
+
+**Status:** Complete
+
+---
+
+### [2026-01-04] - SMTP Email Sending - Environment Considerations
+
+**Issue Identified:**
+- Email sending times out in restricted network environments
+- Gmail SMTP (smtp.gmail.com:587) connections blocked by some hosting environments
+
+**Description:**
+- Sign-in form works correctly up to email sending step
+- Verification token is created in database
+- SMTP connection to Gmail times out after ~2 minutes in restricted environments
+
+**Solution:**
+- Deploy to production environment (Vercel, Railway, etc.) where SMTP is not blocked
+- Alternatively, use email service APIs (SendGrid, Resend, Postmark) instead of direct SMTP
+- These services use HTTPS APIs which are not blocked by network restrictions
+
+**Required Environment Variables for Gmail SMTP:**
+```
+EMAIL_SERVER_HOST="smtp.gmail.com"
+EMAIL_SERVER_PORT="587"
+EMAIL_SERVER_USER="your-email@gmail.com"
+EMAIL_SERVER_PASSWORD="your-app-password"
+EMAIL_FROM="noreply@yourdomain.com"
+```
+
+**Status:** Documented - Deploy to production for full email functionality
+
+---
+
 ### [2026-01-04] - Authentication Flow Fixes
 
 **Issues Fixed:**
