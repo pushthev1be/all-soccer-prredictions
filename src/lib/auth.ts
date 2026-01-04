@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { PrismaClient } from "@prisma/client";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
@@ -17,6 +18,38 @@ const prisma = new PrismaClient();
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    // Development test provider (bypasses email for local testing)
+    CredentialsProvider({
+      id: "test",
+      name: "Test",
+      credentials: {
+        email: { label: "Email", type: "email", placeholder: "test@example.com" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) return null;
+        
+        let user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              name: credentials.email.split('@')[0],
+              emailVerified: new Date(),
+            },
+          });
+        }
+        
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.email.split('@')[0],
+        };
+      },
+    }),
+    // Email provider for production
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -35,15 +68,21 @@ export const authOptions: NextAuthOptions = {
     error: "/auth/error",
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
       }
       return session;
     },
   },
   session: {
-    strategy: "database" as const,
+    strategy: "jwt" as const,
   },
   debug: process.env.NEXTAUTH_DEBUG === "true", // Control debug mode via environment variable
   secret: process.env.NEXTAUTH_SECRET ?? "dev-secret",
