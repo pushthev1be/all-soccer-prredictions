@@ -4,6 +4,43 @@
 
 ---
 
+### [2026-01-04] - Test Credentials Provider for Development Login
+
+**Issue Solved:**
+- SMTP email sending times out in restricted network environments
+- Unable to test full authentication flow locally without working email
+- Magic link callback URLs don't work when testing locally
+
+**Solution Implemented:**
+- Added `CredentialsProvider` with id "test" for development login bypass
+- Users can enter any email and click "Quick Sign In (Dev)" to login instantly
+- Creates user automatically if they don't exist (with emailVerified set)
+- Changed session strategy from `database` to `jwt` (required for credentials providers)
+
+**Files Modified:**
+- `src/lib/auth.ts` - Added CredentialsProvider, changed session strategy to JWT, updated callbacks
+- `src/app/auth/signin/page.tsx` - Added green "Quick Sign In (Dev)" button alongside email link option
+
+**How to Use:**
+1. Go to http://localhost:3000/auth/signin
+2. Enter any email (e.g., test@example.com)
+3. Click green "Quick Sign In (Dev)" button
+4. Redirects to dashboard with user logged in
+
+**Testing Notes:**
+- Successfully tested login with test@example.com
+- Dashboard loads correctly showing user info
+- Sign out works correctly
+- User is created in database with emailVerified timestamp
+
+**Production Consideration:**
+- Consider wrapping test provider with `process.env.NODE_ENV === 'development'` check
+- Email provider still available for production use
+
+**Status:** Complete
+
+---
+
 ### [2026-01-04] - CSP Configuration Fix for React Hydration
 
 **Issues Fixed:**
