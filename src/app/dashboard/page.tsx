@@ -89,6 +89,23 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* User's Predictions Section */}
+        <div className="mt-8 bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Recent Predictions</h2>
+          <div className="space-y-4">
+            {/* This will be populated via API call */}
+            <div className="text-center py-8 text-gray-500">
+              <p>No predictions yet. Create your first prediction!</p>
+              <Link 
+                href="/predictions/create"
+                className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Create First Prediction
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

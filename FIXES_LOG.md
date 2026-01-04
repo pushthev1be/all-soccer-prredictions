@@ -4,6 +4,46 @@
 
 ---
 
+### [2026-01-04] - Prediction API Endpoint and List Features (MVP Phase 1)
+
+**Features Implemented:**
+- Complete prediction creation and listing functionality for the MVP
+- Users can create soccer match predictions with various market types
+- Users can view their submitted predictions in a list
+
+**New Files Created:**
+- `src/lib/prediction-constants.ts` - Market options and labels for form validation (1X2, Over/Under, BTTS, Double Chance, Asian Handicap, Correct Score, DNB)
+- `src/app/api/predictions/route.ts` - API endpoint with POST (create) and GET (list) handlers
+- `src/app/predictions/page.tsx` - Predictions list page with authentication check
+- `src/app/predictions/create/page.tsx` - Prediction creation form with market/pick validation
+- `src/components/predictions/predictions-list.tsx` - Client component with loading/error/empty states
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Added "Recent Predictions" section with link to create first prediction
+
+**API Endpoints:**
+- `POST /api/predictions` - Create a new prediction (validates market/pick, creates in database)
+- `GET /api/predictions` - List user's predictions with pagination and feedback data
+
+**Form Validation:**
+- Competition, home team, away team, kickoff time (required)
+- Market type with corresponding valid picks
+- Reasoning (minimum 10 characters)
+- Optional: odds, stake, bookmaker
+
+**Testing Notes:**
+- Successfully created prediction (Man United vs Liverpool, Home Win)
+- Prediction appears in list with correct status (Pending)
+- Dashboard shows "Recent Predictions" section
+- Authentication check redirects to signin if not logged in
+
+**Next Phase:**
+- AI feedback system (Phase 2) - predictions currently remain in "pending" status
+
+**Status:** Complete
+
+---
+
 ### [2026-01-04] - Test Credentials Provider for Development Login
 
 **Issue Solved:**
