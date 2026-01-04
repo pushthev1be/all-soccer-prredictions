@@ -1,5 +1,65 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# All Soccer Predictions
 
+AI-powered soccer prediction feedback platform.
+
+## Features
+- Email authentication (NextAuth.js, custom pages)
+- Modern dashboard and landing page UI
+- Evidence-based feedback for soccer predictions
+- PostgreSQL and Redis support (Docker Compose)
+- Prisma ORM with migrations
+- Tailwind CSS and custom theming
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Docker (for local Postgres/Redis)
+- Yarn or npm
+
+### Setup
+1. Clone the repository:
+	```sh
+	git clone https://github.com/pushthev1be/all-soccer-prredictions.git
+	cd all-soccer-prredictions
+	```
+2. Install dependencies:
+	```sh
+	npm install
+	# or
+	yarn install
+	```
+3. Copy `.env.example` to `.env` and fill in your environment variables (see below).
+4. Start Docker services:
+	```sh
+	docker-compose up -d
+	```
+5. Run database migrations:
+	```sh
+	npx prisma migrate deploy
+	# or
+	npx prisma db push
+	```
+6. Start the development server:
+	```sh
+	npm run dev
+	# or
+	yarn dev
+	```
+
+## Environment Variables
+- `DATABASE_URL` (Postgres connection string)
+- `EMAIL_SERVER_HOST`, `EMAIL_SERVER_PORT`, `EMAIL_SERVER_USER`, `EMAIL_SERVER_PASSWORD`, `EMAIL_FROM` (SMTP credentials)
+- `NEXTAUTH_SECRET` (NextAuth secret)
+
+## Scripts
+- `dev` - Start Next.js in development
+- `build` - Build for production
+- `start` - Start production server
+
+## License
+MIT
 ## Getting Started
 
 First, run the development server:
