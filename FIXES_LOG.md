@@ -4,6 +4,32 @@
 
 ---
 
+### [2026-01-04] - Authentication Flow Fixes
+
+**Issues Fixed:**
+1. Error page was displaying landing page content instead of actual authentication errors
+2. Sign-in page did not redirect to verify-request page after email submission
+3. Sign-in page had no error handling for failed email submissions
+
+**Description:**
+- Rewrote `/auth/error/page.tsx` to properly display NextAuth error messages with user-friendly descriptions
+- Added error code display for debugging purposes
+- Updated `/auth/signin/page.tsx` to redirect to `/auth/verify-request` after successful email submission
+- Added error state handling and display in sign-in form
+- Used Suspense boundary for useSearchParams in error page (Next.js requirement)
+
+**Root Cause Analysis:**
+- Users clicking magic link in email were being redirected to error page on failures, but the error page showed marketing content instead of the actual error
+- The "Verification" error (expired/used link) was being masked, making it impossible for users to understand why sign-in failed
+
+**Files Modified:**
+- `src/app/auth/error/page.tsx` - Complete rewrite to display actual auth errors
+- `src/app/auth/signin/page.tsx` - Added redirect to verify-request and error handling
+
+**Status:** Complete
+
+---
+
 ### [2026-01-03] - Major Authentication, Database, and UI Overhaul
 **Issues/Features Added:**
 - Implemented custom authentication pages (Sign In, Verify Request, Error) for improved UX and accessibility
