@@ -4,6 +4,8 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { marketOptions } from "@/lib/prediction-constants";
+import { addPredictionJob } from "@/lib/queue";
+import { analyzePrediction } from "@/lib/ai-analyzer";
 
 const prisma = new PrismaClient();
 
@@ -67,14 +69,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate canonical IDs
+    const competitionSlug = data.competition.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, '');
+    const homeTeamSlug = data.homeTeam.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, '');
+    const awayTeamSlug = data.awayTeam.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, '');
+
     // Create prediction
     const prediction = await prisma.prediction.create({
       data: {
         userId: data.userId,
         status: "pending",
-        canonicalCompetitionId: `custom:${data.competition.toLowerCase().replace(/\s+/g, "-")}`,
-        canonicalHomeTeamId: `custom:${data.homeTeam.toLowerCase().replace(/\s+/g, "-")}`,
-        canonicalAwayTeamId: `custom:${data.awayTeam.toLowerCase().replace(/\s+/g, "-")}`,
+        canonicalCompetitionId: `custom:${competitionSlug}`,
+        canonicalHomeTeamId: `custom:${homeTeamSlug}`,
+        canonicalAwayTeamId: `custom:${awayTeamSlug}`,
         kickoffTimeUTC: new Date(data.kickoffTime),
         market: data.market,
         pick: data.pick,
@@ -93,26 +100,110 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: In Phase 2, we'll add background job for AI analysis here
-    // For now, just return success
+    console.log(`✅ Prediction created: ${prediction.id}`);
 
-    return NextResponse.json({
-      success: true,
-      prediction: {
-        id: prediction.id,
-        status: prediction.status,
-        message: "Prediction submitted successfully! AI analysis will begin shortly.",
-        estimatedCompletion: "30-60 seconds",
-      },
-    });
+    try {
+      // Queue the analysis job
+      const job = await addPredictionJob(prediction.id, data.userId);
+      console.log(`📤 Job ${job.id} added to queue for prediction ${prediction.id}`);
+
+      return NextResponse.json({
+        success: true,
+        prediction: {
+          id: prediction.id,
+          status: "pending",
+          message: "Prediction submitted successfully! AI analysis has been queued.",
+          estimatedCompletion: "30-60 seconds",
+          jobId: job.id,
+        },
+        queueInfo: {
+          jobId: job.id,
+          status: "queued",
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+    } catch (queueError) {
+      console.error("❌ Failed to queue job:", queueError);
+
+      // Dev-only synchronous analysis fallback to avoid stuck pending
+      const devSync = process.env.DEV_ANALYZE_SYNC === "1" || process.env.NODE_ENV === "development";
+      if (devSync) {
+        try {
+          console.log("⚙️ Queue unavailable — running synchronous analysis (dev mode)");
+          const analysis = await analyzePrediction(prediction);
+
+          const feedback = await prisma.feedback.create({
+            data: {
+              predictionId: prediction.id,
+              summary: analysis.summary,
+              strengths: analysis.strengths,
+              risks: analysis.risks,
+              missingChecks: analysis.missingChecks,
+              contradictions: analysis.contradictions,
+              keyFactors: analysis.keyFactors,
+              whatWouldChangeMyMind: analysis.whatWouldChangeMyMind,
+              dataQualityNotes: analysis.dataQualityNotes,
+              confidenceExplanation: analysis.confidenceExplanation,
+              confidenceScore: analysis.confidenceScore,
+              llmModel: analysis.llmModel,
+              llmPromptVersion: "1.0",
+              processingTimeMs: analysis.processingTimeMs,
+            },
+          });
+
+          await prisma.prediction.update({
+            where: { id: prediction.id },
+            data: { status: "completed", updatedAt: new Date() },
+          });
+
+          return NextResponse.json({
+            success: true,
+            prediction: {
+              id: prediction.id,
+              status: "completed",
+              message: "Analysis completed synchronously in development mode.",
+            },
+            feedback: {
+              id: feedback.id,
+              confidenceScore: feedback.confidenceScore,
+            },
+            system: {
+              mode: "dev-sync",
+              timestamp: new Date().toISOString(),
+            },
+          });
+        } catch (syncError) {
+          console.error("❌ Dev-sync analysis failed:", syncError);
+          // Fall through to marking failed
+        }
+      }
+
+      // Update prediction status to indicate queue failure
+      await prisma.prediction.update({
+        where: { id: prediction.id },
+        data: { status: "failed", updatedAt: new Date() },
+      });
+
+      return NextResponse.json({
+        success: false,
+        prediction: {
+          id: prediction.id,
+          status: "failed",
+          message: "Prediction saved but failed to queue for analysis. Please try again.",
+        },
+        error: "Queue system unavailable",
+      }, { status: 500 });
+    }
 
   } catch (error) {
-    console.error("Prediction creation error:", error);
+    console.error("❌ Prediction creation error:", error);
     
     return NextResponse.json(
       { 
         error: "Internal server error",
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );
@@ -133,11 +224,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = parseInt(searchParams.get("skip") || "0");
+    const status = searchParams.get("status"); // Optional filter by status
+
+    // Build where clause
+    const where: any = {
+      userId: session.user.id,
+    };
+
+    if (status) {
+      where.status = status;
+    }
 
     const predictions = await prisma.prediction.findMany({
-      where: {
-        userId: session.user.id,
-      },
+      where,
       include: {
         feedback: {
           select: {
@@ -147,6 +246,14 @@ export async function GET(request: NextRequest) {
             createdAt: true,
           },
         },
+        sources: {
+          select: {
+            id: true,
+            provider: true,
+            title: true,
+          },
+          take: 2, // Limit sources in list view
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -155,11 +262,16 @@ export async function GET(request: NextRequest) {
       skip: skip,
     });
 
-    const total = await prisma.prediction.count({
-      where: {
-        userId: session.user.id,
-      },
-    });
+    const total = await prisma.prediction.count({ where });
+
+    // Get queue stats if available
+    let queueStats = null;
+    try {
+      const { getQueueStats } = await import('@/lib/queue');
+      queueStats = await getQueueStats();
+    } catch (queueError) {
+      console.log("Queue stats unavailable:", queueError);
+    }
 
     return NextResponse.json({
       predictions,
@@ -169,13 +281,26 @@ export async function GET(request: NextRequest) {
         skip,
         hasMore: skip + limit < total,
       },
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        totalPredictions: total,
+      },
+      system: {
+        queueStats,
+        timestamp: new Date().toISOString(),
+      },
     });
 
   } catch (error) {
-    console.error("Get predictions error:", error);
+    console.error("❌ Get predictions error:", error);
     
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }
