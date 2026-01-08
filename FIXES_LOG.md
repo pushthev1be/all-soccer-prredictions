@@ -515,3 +515,57 @@ EMAIL_FROM="noreply@yourdomain.com"
 - `.env` updated with Ethereal SMTP credentials: `EMAIL_SERVER_HOST`, `EMAIL_SERVER_USER`, `EMAIL_SERVER_PASSWORD`, `EMAIL_FROM`
 
 **Status:** ✅ Complete — Email sign-in flow verified
+
+---
+
+### [2026-01-07] - Dev Convenience: Combined Dev Script, Sync Analysis Mode, Queue Tools, Auth Hardening
+
+**Issues Solved / Improvements:**
+- Predictions stuck at `pending` when only `npm run dev` is used (worker not running).
+- Developer friction starting both web + worker; lack of easy queue visibility.
+- Package.json parse error due to a missing comma in scripts causing dev overlay JSON errors.
+- NextAuth session fetch returning HTML (500) in dev when email env not configured.
+
+**Changes Made:**
+- Added combined dev script to run web + worker together: `dev:all` in [package.json](package.json).
+- Added queue status CLI and VS Code tasks:
+  - `queue:stats` script [scripts/queue/stats.ts](scripts/queue/stats.ts) and a VS Code task in [.vscode/tasks.json](.vscode/tasks.json).
+  - Compound task “Dev: Start (Docker+All)” to run Docker then dev:all.
+- Added worker-stall hint in `GET /api/predictions`: surfaces `system.workerHint` when jobs are waiting and no worker is active in [src/app/api/predictions/route.ts](src/app/api/predictions/route.ts).
+- Implemented dev-sync mode: `DEV_ANALYZE_SYNC=1` runs `analyzePrediction()` synchronously in `POST /api/predictions`, immediately completing new predictions in dev.
+- Added Windows-friendly scripts:
+  - `dev:sync`, `dev:sync:all` in [package.json](package.json).
+- Seeded realistic development data with mixed statuses (completed, processing, pending, failed): [scripts/seed-dev-data.ts](scripts/seed-dev-data.ts) and scripts `db:seed-dev`, `dev:reset` in [package.json](package.json).
+- Fixed `package.json` JSON error (missing comma after `queue:stats`).
+- Hardened NextAuth provider config: guarded `EmailProvider` behind env checks in [src/lib/auth.ts](src/lib/auth.ts) to avoid 500s when email isn’t configured.
+
+**How to Use:**
+```powershell
+# Run everything together
+npm run dev:all
+
+# Dev without worker (synchronous analysis)
+npm run dev:sync
+
+# Seed dev data and start
+npm run db:seed-dev
+npm run dev
+
+# Queue metrics
+npm run queue:stats
+
+# Docker helpers
+npm run dev:up
+npm run dev:down
+```
+
+**Files Modified / Added:**
+- [package.json](package.json) — added `dev:all`, `dev:sync`, `dev:sync:all`, `db:seed-dev`, `dev:reset`, queue helpers; fixed JSON comma.
+- [src/app/api/predictions/route.ts](src/app/api/predictions/route.ts) — dev-sync mode; worker-stall hint in GET.
+- [scripts/queue/stats.ts](scripts/queue/stats.ts) — queue metrics script.
+- [.vscode/tasks.json](.vscode/tasks.json) — tasks for Dev: Web, Worker, All, Docker Up/Down, Queue: Stats, compound Dev: Start.
+- [scripts/seed-dev-data.ts](scripts/seed-dev-data.ts) — seeds mixed-status predictions for realistic UI.
+- [src/lib/auth.ts](src/lib/auth.ts) — EmailProvider now conditional on env vars.
+
+**Status:** ✅ Complete — Dev ergonomics improved; predictions complete in dev without worker; queue visibility added; auth 500s mitigated.
+

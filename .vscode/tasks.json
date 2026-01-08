@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev: Web",
+      "type": "shell",
+      "command": "npm run dev",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev: Worker",
+      "type": "shell",
+      "command": "npm run worker",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev: All",
+      "type": "shell",
+      "command": "npm run dev:all",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev: Start (Docker+All)",
+      "dependsOn": ["Docker: Up", "Dev: All"],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "Queue: Stats",
+      "type": "shell",
+      "command": "npm run queue:stats",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Up",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Down",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    }
+  ]
+}

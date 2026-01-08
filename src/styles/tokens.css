@@ -1,0 +1,71 @@
+/* Auto-generated from tokens/tokens.json - Edit tokens and run: npm run tokens:build */
+
+:root {
+  /* Color Tokens */
+  --color-primary-50: #f8fafc;
+  --color-primary-100: #f1f5f9;
+  --color-primary-200: #e2e8f0;
+  --color-primary-300: #cbd5e1;
+  --color-primary-400: #94a3b8;
+  --color-primary-500: #64748b;
+  --color-primary-600: #475569;
+  --color-primary-700: #334155;
+  --color-primary-800: #1e293b;
+  --color-primary-900: #0f172a;
+  --color-primary-950: #020617;
+  --color-soccer-grass: #22c55e;
+  --color-soccer-pitch: #15803d;
+  --color-soccer-goal: #3b82f6;
+  --color-soccer-card: #ef4444;
+  --color-soccer-referee: #f59e0b;
+  --color-status-pending: #f59e0b;
+  --color-status-processing: #3b82f6;
+  --color-status-completed: #22c55e;
+  --color-status-failed: #ef4444;
+  --color-background-default: #ffffff;
+  --color-background-muted: #f8fafc;
+  --color-background-subtle: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+
+  /* Spacing Tokens */
+  --spacing-0: 0rem;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+
+  /* Radius Tokens */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Typography Tokens */
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}

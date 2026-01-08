@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { PredictionCard } from "./prediction-card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 interface Prediction {
   id: string;
@@ -27,6 +32,9 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<string>("all");
+  const [market, setMarket] = useState<string>("all");
 
   useEffect(() => {
     fetchPredictions();
@@ -49,6 +57,22 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
       setLoading(false);
     }
   };
+
+  const availableMarkets = useMemo(() => {
+    const all = Array.from(new Set(predictions.map((p) => p.market).filter(Boolean)));
+    return all.sort((a, b) => a.localeCompare(b));
+  }, [predictions]);
+
+  const filtered = predictions.filter((p) => {
+    const matchesQuery = query
+      ? `${p.market} ${p.pick} ${p.reasoning ?? ""}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      : true;
+    const matchesStatus = status === "all" ? true : p.status === status;
+    const matchesMarket = market === "all" ? true : p.market === market;
+    return matchesQuery && matchesStatus && matchesMarket;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,66 +136,99 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Match & Prediction
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {predictions.map((prediction) => (
-              <tr key={prediction.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">
-                    {prediction.market}: {prediction.pick}
-                  </div>
-                  <div className="text-sm text-gray-500 truncate max-w-xs">
-                    {prediction.reasoning}
-                  </div>
-                  {prediction.odds && (
-                    <div className="text-sm text-gray-700 mt-1">
-                      Odds: {prediction.odds.toFixed(2)}
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(prediction.status)}`}>
-                    {getStatusLabel(prediction.status)}
-                  </span>
-                  {prediction.feedback && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Confidence: {(prediction.feedback.confidenceScore * 100).toFixed(0)}%
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {new Date(prediction.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 text-sm font-medium">
-                  <Link
-                    href={`/predictions/${prediction.id}`}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    View Details
-                  </Link>
-                </td>
-              </tr>
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch gap-3">
+        <div className="flex-1">
+          <Input
+            placeholder="Search by market, pick, or reasoning..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            value={market}
+            onChange={(e) => setMarket(e.target.value)}
+          >
+            <option value="all">All markets</option>
+            {availableMarkets.map((m) => (
+              <option key={m} value={m}>{m}</option>
             ))}
-          </tbody>
-        </table>
+          </select>
+        </div>
+        {(query || status !== "all" || market !== "all") && (
+          <div className="sm:self-center">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setQuery("");
+                setStatus("all");
+                setMarket("all");
+              }}
+              className="gap-1"
+            >
+              <X className="h-4 w-4" /> Clear
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Active filter pills */}
+      {(query || status !== "all" || market !== "all") && (
+        <div className="flex flex-wrap gap-2">
+          {query && (
+            <Badge variant="secondary" className="gap-1 pl-2">
+              Search: "{query}"
+              <button onClick={() => setQuery("")}> <X className="h-3 w-3 ml-1" /> </button>
+            </Badge>
+          )}
+          {status !== "all" && (
+            <Badge variant="secondary" className="gap-1 pl-2">
+              Status: {status}
+              <button onClick={() => setStatus("all")}> <X className="h-3 w-3 ml-1" /> </button>
+            </Badge>
+          )}
+          {market !== "all" && (
+            <Badge variant="secondary" className="gap-1 pl-2">
+              Market: {market}
+              <button onClick={() => setMarket("all")}> <X className="h-3 w-3 ml-1" /> </button>
+            </Badge>
+          )}
+        </div>
+      )}
+
+      <div className="text-sm text-gray-500">
+        Showing {filtered.length} of {predictions.length}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((p) => (
+          <PredictionCard
+            key={p.id}
+            prediction={{
+              id: p.id,
+              market: p.market,
+              pick: p.pick,
+              odds: typeof p.odds === "number" ? p.odds : null,
+              status: (p.status as any) || "pending",
+              reasoning: p.reasoning,
+            }}
+            variant="compact"
+          />
+        ))}
       </div>
     </div>
   );

@@ -123,3 +123,6 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Optional: override defaults with generated tokens from Figma/Tokens Studio */
+@import "../styles/tokens.css";

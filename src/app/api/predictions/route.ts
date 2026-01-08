@@ -103,6 +103,54 @@ export async function POST(request: NextRequest) {
     console.log(`✅ Prediction created: ${prediction.id}`);
 
     try {
+      // Dev synchronous analysis mode: bypass queue when enabled
+      const devSync = process.env.DEV_ANALYZE_SYNC === "1" || process.env.NODE_ENV === "development" && process.env.DEV_ANALYZE_SYNC === "1";
+      if (devSync) {
+        console.log("⚙️ Dev sync mode enabled — running analysis synchronously");
+        const analysis = await analyzePrediction(prediction);
+
+        const feedback = await prisma.feedback.create({
+          data: {
+            predictionId: prediction.id,
+            summary: analysis.summary,
+            strengths: analysis.strengths,
+            risks: analysis.risks,
+            missingChecks: analysis.missingChecks,
+            contradictions: analysis.contradictions,
+            keyFactors: analysis.keyFactors,
+            whatWouldChangeMyMind: analysis.whatWouldChangeMyMind,
+            dataQualityNotes: analysis.dataQualityNotes,
+            confidenceExplanation: analysis.confidenceExplanation,
+            confidenceScore: analysis.confidenceScore,
+            llmModel: analysis.llmModel,
+            llmPromptVersion: "1.0",
+            processingTimeMs: analysis.processingTimeMs,
+          },
+        });
+
+        await prisma.prediction.update({
+          where: { id: prediction.id },
+          data: { status: "completed", updatedAt: new Date() },
+        });
+
+        return NextResponse.json({
+          success: true,
+          prediction: {
+            id: prediction.id,
+            status: "completed",
+            message: "Analysis completed synchronously in dev mode.",
+          },
+          feedback: {
+            id: feedback.id,
+            confidenceScore: feedback.confidenceScore,
+          },
+          system: {
+            mode: "dev-sync",
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+
       // Queue the analysis job
       const job = await addPredictionJob(prediction.id, data.userId);
       console.log(`📤 Job ${job.id} added to queue for prediction ${prediction.id}`);
@@ -266,9 +314,13 @@ export async function GET(request: NextRequest) {
 
     // Get queue stats if available
     let queueStats = null;
+    let workerHint: string | null = null;
     try {
       const { getQueueStats } = await import('@/lib/queue');
       queueStats = await getQueueStats();
+      if (queueStats && queueStats.waiting > 0 && queueStats.active === 0) {
+        workerHint = 'Jobs are waiting but no worker is active. Start the worker with "npm run worker" or run both with "npm run dev:all".';
+      }
     } catch (queueError) {
       console.log("Queue stats unavailable:", queueError);
     }
@@ -288,6 +340,7 @@ export async function GET(request: NextRequest) {
       },
       system: {
         queueStats,
+        workerHint,
         timestamp: new Date().toISOString(),
       },
     });
