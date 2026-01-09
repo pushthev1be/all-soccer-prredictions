@@ -171,6 +171,47 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
               </div>
 
               <div className="p-6 space-y-8">
+                {/* Split Team Box with Form and Verdict - MAIN DISPLAY */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 p-8">
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Home Team */}
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-6xl mb-4">⚽</div>
+                      <h3 className="text-2xl font-bold text-center mb-3">
+                        {prediction.canonicalHomeTeamId.replace('custom:', '').replace(/-/g, ' ')}
+                      </h3>
+                      <div className="bg-white rounded-lg p-4 w-full border-2 border-blue-300">
+                        <p className="text-xs text-gray-600 font-semibold mb-2 text-center">RECENT FORM</p>
+                        <p className="text-2xl font-bold text-center tracking-widest text-blue-600">
+                          {(prediction.feedback as any).formAnalysis?.homeRecentForm || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-6xl mb-4">⚽</div>
+                      <h3 className="text-2xl font-bold text-center mb-3">
+                        {prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' ')}
+                      </h3>
+                      <div className="bg-white rounded-lg p-4 w-full border-2 border-purple-300">
+                        <p className="text-xs text-gray-600 font-semibold mb-2 text-center">RECENT FORM</p>
+                        <p className="text-2xl font-bold text-center tracking-widest text-purple-600">
+                          {(prediction.feedback as any).formAnalysis?.awayRecentForm || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Final Verdict */}
+                  <div className="mt-8 pt-6 border-t-2 border-blue-300">
+                    <p className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">📌 Final Verdict</p>
+                    <p className="text-lg text-gray-800 leading-relaxed">
+                      {prediction.feedback.summary || 'No verdict available'}
+                    </p>
+                  </div>
+                </div>
+
                 {/* Confidence Score Banner */}
                 <div className={`p-6 rounded-lg ${
                   prediction.feedback.confidenceScore > 0.7
@@ -204,18 +245,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                   </p>
                 </div>
 
-                {/* Executive Summary */}
-                <div>
-                  <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
-                    <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">📋</span>
-                    Executive Summary
-                  </h3>
-                  <p className="text-gray-700 bg-blue-50 p-4 rounded border-l-4 border-blue-600 leading-relaxed">
-                    {prediction.feedback.summary}
-                  </p>
-                </div>
-
-                {/* Team Form Section */}
+                {/* Team Comparison Details Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-purple-600">
                     <h4 className="font-bold text-purple-600 mb-2">📊 Team Comparison</h4>
@@ -228,13 +258,13 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-indigo-600">
-                    <h4 className="font-bold text-indigo-600 mb-2">🔥 Recent Form</h4>
+                    <h4 className="font-bold text-indigo-600 mb-2">📈 Season Stats</h4>
                     {(prediction.feedback as any).formAnalysis ? (
-                      <div className="space-y-2 text-sm">
-                        <p><span className="font-semibold">Home:</span> {(prediction.feedback as any).formAnalysis.homeRecentForm}</p>
-                        <p><span className="font-semibold">Away:</span> {(prediction.feedback as any).formAnalysis.awayRecentForm}</p>
+                      <div className="space-y-1 text-xs">
+                        <p><span className="font-semibold">Home Form:</span> {(prediction.feedback as any).formAnalysis.homeRecentForm}</p>
+                        <p><span className="font-semibold">Away Form:</span> {(prediction.feedback as any).formAnalysis.awayRecentForm}</p>
                       </div>
-                    ) : <p className="text-gray-600">No form data</p>}
+                    ) : <p className="text-gray-600">No stats data</p>}
                   </div>
                 </div>
 
