@@ -15,7 +15,7 @@ export function PredictionsGridSkeleton() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl p-6 border border-slate-200 bg-white"
+            className="rounded-2xl p-6 border border-black/10 bg-white shadow-sm"
           >
             <div className="space-y-4">
               {/* Header */}

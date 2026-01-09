@@ -42,35 +42,35 @@ function normalizeStatus(status: PredictionStatus): {
     case "won":
       return { 
         label: "Won", 
-        colorClass: "text-green-500", 
+        colorClass: "text-gray-700", 
         badgeVariant: "default", 
-        Icon: (p) => <CheckCircle2 className={p.className} style={{ color: statusColors.completed }} /> 
+        Icon: (p) => <CheckCircle2 className={cn(p.className, "text-black")} /> 
       };
     case "failed":
     case "lost":
       return { 
         label: "Lost", 
-        colorClass: "text-red-500", 
+        colorClass: "text-gray-700", 
         badgeVariant: "destructive", 
-        Icon: (p) => <TrendingDown className={p.className} style={{ color: statusColors.failed }} /> 
+        Icon: (p) => <TrendingDown className={cn(p.className, "text-black")} /> 
       };
     case "processing":
     case "live":
       return { 
         label: "Live", 
-        colorClass: "text-blue-500", 
+        colorClass: "text-gray-700", 
         badgeVariant: "default", 
-        Icon: (p) => <Clock className={p.className} style={{ color: statusColors.processing }} /> 
+        Icon: (p) => <Clock className={cn(p.className, "text-black")} /> 
       };
     case "void":
-      return { label: "Void", colorClass: "text-gray-500", badgeVariant: "outline", Icon: (p) => <Clock className={p.className} /> };
+      return { label: "Void", colorClass: "text-gray-700", badgeVariant: "outline", Icon: (p) => <Clock className={cn(p.className, "text-gray-700")} /> };
     case "pending":
     default:
       return { 
         label: "Pending", 
-        colorClass: "text-yellow-500", 
+        colorClass: "text-gray-700", 
         badgeVariant: "secondary", 
-        Icon: (p) => <Clock className={p.className} style={{ color: statusColors.pending }} /> 
+        Icon: (p) => <Clock className={cn(p.className, "text-gray-700")} /> 
       };
   }
 }
@@ -82,20 +82,20 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
   const roi = hasRoi && prediction.stake! > 0 ? ((prediction.potentialWin! - prediction.stake!) / prediction.stake!) * 100 : null;
 
   const statusGradients: Record<PredictionStatus, string> = {
-    completed: "from-emerald-500/20 to-emerald-600/20 border-emerald-200",
-    won: "from-emerald-500/20 to-emerald-600/20 border-emerald-200",
-    failed: "from-red-500/20 to-red-600/20 border-red-200",
-    lost: "from-red-500/20 to-red-600/20 border-red-200",
-    processing: "from-cyan-500/20 to-cyan-600/20 border-cyan-200",
-    live: "from-cyan-500/20 to-cyan-600/20 border-cyan-200",
-    pending: "from-amber-500/20 to-amber-600/20 border-amber-200",
-    void: "from-slate-500/20 to-slate-600/20 border-slate-200",
+    completed: "from-gray-100 to-gray-200 border-gray-300",
+    won: "from-gray-100 to-gray-200 border-gray-300",
+    failed: "from-gray-100 to-gray-200 border-gray-300",
+    lost: "from-gray-100 to-gray-200 border-gray-300",
+    processing: "from-gray-100 to-gray-200 border-gray-300",
+    live: "from-gray-100 to-gray-200 border-gray-300",
+    pending: "from-gray-100 to-gray-200 border-gray-300",
+    void: "from-gray-100 to-gray-200 border-gray-300",
   };
 
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300",
+        "group relative overflow-hidden transition-all duration-300 shadow-sm",
         "hover:shadow-2xl hover:-translate-y-1",
         "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/0 before:to-white/10",
         "before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
@@ -121,9 +121,9 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
       <CardHeader className={cn("pb-4 relative z-10", variant === "compact" && "p-0 pb-2") }>
         <div className="flex justify-between items-start gap-4">
           <div className="space-y-2 flex-1">
-            <CardTitle className="text-lg font-bold text-slate-900">
+            <CardTitle className="text-lg font-bold text-black">
               {prediction.homeTeam && prediction.awayTeam ? (
-                <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                <span>
                   {prediction.homeTeam} vs {prediction.awayTeam}
                 </span>
               ) : (
@@ -131,7 +131,7 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
               )}
             </CardTitle>
             {(prediction.league || prediction.competition || startTime) && (
-              <p className="text-xs font-medium text-slate-600">
+              <p className="text-xs font-medium text-gray-600">
                 {[prediction.league || prediction.competition, startTime ? startTime.toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : null]
                   .filter(Boolean)
                   .join(" • ")}
@@ -148,32 +148,32 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
       <CardContent className={cn("space-y-4 relative z-10", variant === "compact" && "p-0") }>
         {/* Prediction Details */}
         <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="font-semibold text-xs bg-slate-100 text-slate-700">
+          <Badge variant="outline" className="font-semibold text-xs bg-gray-100 text-black border-gray-300">
             {prediction.market}
           </Badge>
-          <Badge className="font-bold text-xs bg-gradient-to-r from-emerald-500 to-cyan-500 text-white">
+          <Badge className="font-bold text-xs bg-black text-white">
             {prediction.pick}
           </Badge>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 py-3 bg-white/50 rounded-lg px-3">
+        <div className="grid grid-cols-3 gap-3 py-3 bg-gray-50 rounded-lg px-3">
           {typeof prediction.odds === "number" && (
             <div>
-              <p className="text-xs font-medium text-slate-600">Odds</p>
-              <p className="text-lg font-bold text-emerald-600">{prediction.odds.toFixed(2)}</p>
+              <p className="text-xs font-medium text-gray-600">Odds</p>
+              <p className="text-lg font-bold text-black">{prediction.odds.toFixed(2)}</p>
             </div>
           )}
           {typeof prediction.stake === "number" && (
             <div>
-              <p className="text-xs font-medium text-slate-600">Stake</p>
-              <p className="text-lg font-bold text-slate-900">${prediction.stake}</p>
+              <p className="text-xs font-medium text-gray-600">Stake</p>
+              <p className="text-lg font-bold text-black">${prediction.stake}</p>
             </div>
           )}
           {roi !== null && (
             <div>
-              <p className="text-xs font-medium text-slate-600">ROI</p>
-              <p className={cn("text-lg font-bold", roi > 0 ? "text-emerald-600" : "text-red-600")}>
+              <p className="text-xs font-medium text-gray-600">ROI</p>
+              <p className="text-lg font-bold text-black">
                 {roi > 0 ? "+" : ""}{roi.toFixed(1)}%
               </p>
             </div>
@@ -182,25 +182,22 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
 
         {/* Reasoning */}
         {(variant === "default" || variant === "detailed") && prediction.reasoning && (
-          <p className="text-sm text-slate-700 line-clamp-2 font-medium">{prediction.reasoning}</p>
+          <p className="text-sm text-gray-700 line-clamp-2 font-medium">{prediction.reasoning}</p>
         )}
 
           {variant === "detailed" && typeof prediction.stake === "number" && typeof prediction.potentialWin === "number" && (
-            <div className="grid grid-cols-3 gap-4 pt-3 border-t">
+            <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-200">
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Stake</div>
-                <div className="font-semibold">${prediction.stake.toFixed(2)}</div>
+                <div className="text-sm text-gray-600">Stake</div>
+                <div className="font-semibold text-black">${prediction.stake.toFixed(2)}</div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Potential</div>
-                <div className="font-semibold text-green-600">${prediction.potentialWin.toFixed(2)}</div>
+                <div className="text-sm text-gray-600">Potential</div>
+                <div className="font-semibold text-black">${prediction.potentialWin.toFixed(2)}</div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Profit</div>
-                <div className={cn(
-                  "font-semibold",
-                  prediction.potentialWin - prediction.stake > 0 ? "text-green-600" : "text-red-600"
-                )}>
+                <div className="text-sm text-gray-600">Profit</div>
+                <div className="font-semibold text-black">
                   ${(prediction.potentialWin - prediction.stake).toFixed(2)}
                 </div>
               </div>

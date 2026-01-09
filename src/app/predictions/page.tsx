@@ -19,12 +19,20 @@ export default async function PredictionsPage() {
             <h1 className="text-3xl font-bold text-gray-900">My Predictions</h1>
             <p className="text-gray-600 mt-2">View all your submitted predictions and AI feedback</p>
           </div>
-          <Link
-            href="/predictions/create"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
-          >
-            + New Prediction
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/dashboard"
+              className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 font-medium"
+            >
+              ← Home
+            </Link>
+            <Link
+              href="/predictions/create"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
+            >
+              + New Prediction
+            </Link>
+          </div>
         </div>
 
         <PredictionsList userId={session.user.id} />

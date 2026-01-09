@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { competitions, competitionMap } from "@/lib/competitions";
 import { marketOptions, marketLabels } from "@/lib/prediction-constants";
 
 export default function CreatePredictionPage() {
@@ -13,9 +14,13 @@ export default function CreatePredictionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
+  const defaultCompetitionId = competitionMap["premier-league"] ? "premier-league" : competitions[0]?.id || "";
+  const defaultCompetitionName = competitionMap[defaultCompetitionId]?.name || competitions[0]?.name || "";
+
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState(defaultCompetitionId);
   const [formData, setFormData] = useState({
-    competition: "",
+    competition: defaultCompetitionName,
     homeTeam: "",
     awayTeam: "",
     kickoffTime: "",
@@ -26,6 +31,10 @@ export default function CreatePredictionPage() {
     bookmaker: "",
     reasoning: "",
   });
+
+  const activeCompetition = useMemo(() => competitionMap[selectedCompetitionId] ?? competitions[0], [selectedCompetitionId]);
+  const competitionTeams = activeCompetition?.teams || [];
+  const competitionFixtures = activeCompetition?.fixtures || [];
 
   if (status === "loading") {
     return (
@@ -97,6 +106,28 @@ export default function CreatePredictionPage() {
     }));
   };
 
+  const handleCompetitionChange = (value: string) => {
+    const nextCompetition = competitionMap[value] || competitions.find((c) => c.id === value);
+    setSelectedCompetitionId(value);
+    setFormData((prev) => ({
+      ...prev,
+      competition: nextCompetition?.name || value,
+      homeTeam: "",
+      awayTeam: "",
+    }));
+  };
+
+  const handleFixtureSelect = (fixture: { home: string; away: string; kickoff: string }) => {
+    const localKickoff = new Date(fixture.kickoff);
+    const localValue = localKickoff.toISOString().slice(0, 16);
+    setFormData((prev) => ({
+      ...prev,
+      homeTeam: fixture.home,
+      awayTeam: fixture.away,
+      kickoffTime: localValue,
+    }));
+  };
+
   const currentMarketOptions = marketOptions[formData.market] || [];
 
   return (
@@ -131,21 +162,38 @@ export default function CreatePredictionPage() {
           {/* Match Details */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Match Details</h2>
-            
-            <div>
-              <label htmlFor="competition" className="block text-sm font-medium text-gray-700 mb-1">
-                Competition *
-              </label>
-              <input
-                type="text"
-                id="competition"
-                name="competition"
-                value={formData.competition}
-                onChange={handleChange}
-                required
-                placeholder="e.g., Premier League, Champions League"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="competition-select" className="block text-sm font-medium text-gray-700 mb-1">
+                  League or Competition *
+                </label>
+                <select
+                  id="competition-select"
+                  name="competition-select"
+                  value={selectedCompetitionId}
+                  onChange={(e) => handleCompetitionChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {competitions.map((competition) => (
+                    <option key={competition.id} value={competition.id}>
+                      {competition.icon ? `${competition.icon} ` : ""}{competition.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="competition" className="block text-sm font-medium text-gray-700 mb-1">
+                  Competition (auto-filled)
+                </label>
+                <input
+                  type="text"
+                  id="competition"
+                  name="competition"
+                  value={formData.competition}
+                  readOnly
+                  className="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-md"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -153,31 +201,37 @@ export default function CreatePredictionPage() {
                 <label htmlFor="homeTeam" className="block text-sm font-medium text-gray-700 mb-1">
                   Home Team *
                 </label>
-                <input
-                  type="text"
+                <select
                   id="homeTeam"
                   name="homeTeam"
                   value={formData.homeTeam}
                   onChange={handleChange}
                   required
-                  placeholder="e.g., Manchester United"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                >
+                  <option value="">Select home team</option>
+                  {competitionTeams.map((team) => (
+                    <option key={team} value={team}>{team}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="awayTeam" className="block text-sm font-medium text-gray-700 mb-1">
                   Away Team *
                 </label>
-                <input
-                  type="text"
+                <select
                   id="awayTeam"
                   name="awayTeam"
                   value={formData.awayTeam}
                   onChange={handleChange}
                   required
-                  placeholder="e.g., Liverpool"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                >
+                  <option value="">Select away team</option>
+                  {competitionTeams.map((team) => (
+                    <option key={team} value={team}>{team}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -194,6 +248,61 @@ export default function CreatePredictionPage() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-800">Upcoming fixtures in {activeCompetition?.name}</h3>
+                <span className="text-xs text-gray-500">Tap to auto-fill</span>
+              </div>
+              {competitionFixtures.length > 0 ? (
+                <div className="grid gap-3">
+                  {competitionFixtures.map((fixture) => {
+                    const formatted = new Date(fixture.kickoff).toLocaleString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <button
+                        type="button"
+                        key={`${fixture.home}-${fixture.away}-${fixture.kickoff}`}
+                        onClick={() => handleFixtureSelect(fixture)}
+                        className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 bg-white text-left hover:border-emerald-300 hover:bg-emerald-50/50 transition-all group"
+                      >
+                        <div className="flex-1 text-left">
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 group-hover:bg-emerald-600"></div>
+                            <span className="font-medium text-gray-900 group-hover:text-emerald-700">
+                              {fixture.home} vs {fixture.away}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-sm text-gray-600">
+                            {activeCompetition?.name} - {formatted}
+                          </div>
+                        </div>
+                        <div className="text-emerald-600 group-hover:text-emerald-700">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-6 text-center rounded-xl border border-dashed border-gray-200 bg-white">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-medium text-gray-700 mb-1">No upcoming fixtures</h4>
+                  <p className="text-sm text-gray-500">Select another competition to see upcoming matches.</p>
+                </div>
+              )}
             </div>
           </div>
 
