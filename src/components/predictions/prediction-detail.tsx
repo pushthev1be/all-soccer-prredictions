@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import { getTeamBadgeUrl } from '@/lib/team-badges';
+
 interface PredictionWithFeedback extends Prediction {
   feedback: Feedback | null;
   user: {
@@ -190,14 +192,22 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
 
                     {/* Away Team */}
                     <div className="flex flex-col items-center justify-center border-l-2 border-gray-700 pl-6">
-                      <div className="text-6xl mb-4 opacity-80">⚽</div>
+                        <img 
+                          src={getTeamBadgeUrl(prediction.canonicalHomeTeamId.replace('custom:', '').replace(/-/g, ' '))}
+                          alt="Home team badge"
+                          className="w-24 h-24 mb-4 object-contain"
+                        />
                       <h3 className="text-3xl font-black text-white text-center mb-4 tracking-tight">
                         {prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' ')}
                       </h3>
                       <div className="bg-white rounded-lg p-5 w-full shadow-lg border-2 border-black">
                         <p className="text-xs text-black font-black mb-2 text-center uppercase tracking-widest">Form</p>
                         <p className="text-3xl font-black text-black text-center tracking-widest">
-                          {(prediction.feedback as any).formAnalysis?.awayRecentForm || 'N/A'}
+                        <img 
+                          src={getTeamBadgeUrl(prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' '))}
+                          alt="Away team badge"
+                          className="w-24 h-24 mb-4 object-contain"
+                        />
                         </p>
                       </div>
                     </div>
