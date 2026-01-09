@@ -1,6 +1,7 @@
 import { Prediction } from '@prisma/client';
-import OpenAI from 'openai';
+import axios from 'axios';
 import { sportsDataProvider, FixtureData } from './sports-data-provider';
+import { generateAIPrediction } from './ai-prediction';
 
 interface Citation {
   sourceUrl: string;
@@ -27,11 +28,7 @@ interface AnalysisResult {
   processingTimeMs: number;
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
-
-const ENABLE_AI_ANALYSIS = process.env.ENABLE_AI_ANALYSIS === 'true';
+const ENABLE_AI_ANALYSIS = process.env.ENABLE_AI_ANALYSIS === 'true' || process.env.OPENROUTER_API_KEY;
 
 export async function analyzePrediction(prediction: Prediction): Promise<AnalysisResult> {
   const startTime = Date.now();
@@ -44,7 +41,7 @@ export async function analyzePrediction(prediction: Prediction): Promise<Analysi
     prediction.kickoffTimeUTC
   );
 
-  if (!ENABLE_AI_ANALYSIS || !process.env.OPENAI_API_KEY) {
+  if (!ENABLE_AI_ANALYSIS) {
     return generateMockAnalysis(prediction, fixtureData, startTime);
   }
 
@@ -61,42 +58,65 @@ async function generateAIAnalysis(
   fixtureData: FixtureData,
   startTime: number
 ): Promise<AnalysisResult> {
-  const prompt = buildAnalysisPrompt(prediction, fixtureData);
+  // Use OpenRouter API for real AI analysis
+  const homeTeamName = fixtureData.homeTeam;
+  const awayTeamName = fixtureData.awayTeam;
+  const competition = fixtureData.competition;
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4-turbo-preview',
-    messages: [
-      {
-        role: 'system',
-        content: `You are an expert sports betting analyst. Your role is to provide brutally honest, data-driven analysis of betting predictions. You identify both strengths and critical weaknesses in reasoning. Always cite specific data points and be explicit about uncertainty.`,
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    response_format: { type: 'json_object' },
-    temperature: 0.3,
-    max_tokens: 2000,
+  console.log(`🤖 Sending to OpenRouter AI: ${homeTeamName} vs ${awayTeamName}`);
+
+  const aiPrediction = await generateAIPrediction({
+    homeTeam: homeTeamName,
+    awayTeam: awayTeamName,
+    competition: competition,
+    odds: fixtureData.odds?.[0],
+    historicalContext: fixtureData.headToHead
+      ? `H2H: ${homeTeamName} won ${fixtureData.headToHead.homeWins}/${fixtureData.headToHead.matches}`
+      : undefined,
+    userReasoning: prediction.reasoning || undefined,
   });
 
-  const analysis = JSON.parse(completion.choices[0].message.content || '{}');
-  
+  if (!aiPrediction) {
+    console.warn('⚠️ AI prediction failed, using enhanced mock');
+    return generateMockAnalysis(prediction, fixtureData, startTime);
+  }
+
+  console.log(`✅ AI Analysis received: ${aiPrediction.prediction} (${(aiPrediction.confidence * 100).toFixed(0)}% confident)`);
+
   const citations = generateCitations(fixtureData);
 
   return {
-    summary: analysis.summary || 'Analysis completed',
-    strengths: analysis.strengths || [],
-    risks: analysis.risks || [],
-    missingChecks: analysis.missingChecks || [],
-    contradictions: analysis.contradictions || [],
-    keyFactors: analysis.keyFactors || [],
-    whatWouldChangeMyMind: analysis.whatWouldChangeMyMind || [],
-    dataQualityNotes: analysis.dataQualityNotes || [],
-    confidenceExplanation: analysis.confidenceExplanation || '',
-    confidenceScore: analysis.confidenceScore || 0.5,
+    summary: aiPrediction.reasoning,
+    strengths: [
+      `AI recommends: ${aiPrediction.recommendedBet}`,
+      ...aiPrediction.keyFactors.slice(0, 2),
+    ],
+    risks: aiPrediction.risks || [],
+    missingChecks: [
+      'Real-time team news and press conferences',
+      'Latest injury updates and lineup confirmations',
+    ],
+    contradictions: fixtureData.odds
+      ? [
+          `Market implied probability: ${(1 / fixtureData.odds[0].homeWin * 100).toFixed(1)}%`,
+          `AI confidence: ${(aiPrediction.confidence * 100).toFixed(0)}%`,
+        ]
+      : [],
+    keyFactors: aiPrediction.keyFactors,
+    whatWouldChangeMyMind: [
+      'Significant lineup changes',
+      'Unexpected injury to key player',
+      'Dramatic odds movement indicating market shift',
+    ],
+    dataQualityNotes: [
+      'Analysis powered by Llama 3.1 70B via OpenRouter',
+      'Real football data from football-data.org',
+      'Live betting odds integrated',
+    ],
+    confidenceExplanation: `${aiPrediction.prediction} predicted with ${(aiPrediction.confidence * 100).toFixed(0)}% confidence. ${aiPrediction.reasoning}`,
+    confidenceScore: aiPrediction.confidence,
     citations,
-    llmModel: completion.model,
+    llmModel: 'llama-3.1-70b-instruct (via OpenRouter)',
     processingTimeMs: Date.now() - startTime,
   };
 }
