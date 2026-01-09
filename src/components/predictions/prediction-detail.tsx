@@ -70,7 +70,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
       <Link
         href="/predictions"
         className="inline-flex items-center text-blue-600 hover:text-blue-900 mb-6"
@@ -95,7 +95,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
         {/* Left Column - Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Match Info Card */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white/95 backdrop-blur rounded-2xl shadow-xl border border-gray-100 p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h1 className="text-3xl font-bold">
@@ -167,15 +167,16 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
 
           {/* Feedback Section */}
           {prediction.feedback ? (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
-                <h2 className="text-3xl font-bold text-white">AI Feedback & Analysis</h2>
+            <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-black via-gray-900 to-black p-6 shadow-xl border-b border-white/20">
+                <h2 className="text-3xl font-black text-white drop-shadow-sm">AI Feedback & Analysis</h2>
               </div>
 
               <div className="p-6 space-y-8">
                 {/* Split Team Box with Form and Verdict - BLACK & WHITE DESIGN */}
-                <div className="bg-black rounded-xl border-4 border-white p-8 shadow-2xl">
-                  <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 rounded-2xl border-4 border-white p-8 shadow-2xl relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_left,_#ffffff,_transparent_40%),_radial-gradient(circle_at_bottom_right,_#ffffff,_transparent_35%)]" aria-hidden="true"></div>
+                  <div className="relative grid grid-cols-2 gap-6">
                     {/* Home Team */}
                     <div className="flex flex-col items-center justify-center border-r-2 border-gray-700 pr-6">
                       <div className="text-6xl mb-4 opacity-80">⚽</div>
@@ -223,7 +224,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                 </div>
 
                 {/* Confidence Score Banner */}
-                <div className={`p-6 rounded-lg ${
+                <div className={`p-6 rounded-lg bg-white shadow-md ${
                   prediction.feedback.confidenceScore > 0.7
                     ? 'bg-green-50 border-l-4 border-green-600'
                     : prediction.feedback.confidenceScore > 0.5
@@ -257,7 +258,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
 
                 {/* Team Comparison Details Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-purple-600">
+                  <div className="bg-white p-4 rounded-lg border-l-4 border-purple-600 shadow-sm">
                     <h4 className="font-bold text-purple-600 mb-2">📊 Team Comparison</h4>
                     {(prediction.feedback as any).teamComparison ? (
                       <div className="space-y-2 text-sm">
@@ -267,7 +268,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                     ) : <p className="text-gray-600">No comparison data</p>}
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-indigo-600">
+                  <div className="bg-white p-4 rounded-lg border-l-4 border-indigo-600 shadow-sm">
                     <h4 className="font-bold text-indigo-600 mb-2">📈 Season Stats</h4>
                     {(prediction.feedback as any).formAnalysis ? (
                       <div className="space-y-1 text-xs">
@@ -280,7 +281,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
 
                 {/* H2H & Market Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-orange-600">
+                  <div className="bg-white p-4 rounded-lg border-l-4 border-orange-600 shadow-sm">
                     <h4 className="font-bold text-orange-600 mb-3">⚔️ Head-to-Head</h4>
                     {(prediction.feedback as any).headToHeadStats ? (
                       <div className="space-y-2 text-sm">
@@ -304,7 +305,7 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                     ) : <p className="text-gray-600">No H2H data</p>}
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-green-600">
+                  <div className="bg-white p-4 rounded-lg border-l-4 border-green-600 shadow-sm">
                     <h4 className="font-bold text-green-600 mb-3">💰 Market Odds</h4>
                     {(prediction.feedback as any).marketInsight ? (
                       <div className="space-y-2 text-sm">
