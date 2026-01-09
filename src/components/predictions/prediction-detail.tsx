@@ -171,32 +171,32 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
               </div>
 
               <div className="p-6 space-y-8">
-                {/* Split Team Box with Form and Verdict - MAIN DISPLAY */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 p-8">
-                  <div className="grid grid-cols-2 gap-8">
+                {/* Split Team Box with Form and Verdict - BLACK & WHITE DESIGN */}
+                <div className="bg-black rounded-xl border-4 border-white p-8 shadow-2xl">
+                  <div className="grid grid-cols-2 gap-6">
                     {/* Home Team */}
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="text-6xl mb-4">⚽</div>
-                      <h3 className="text-2xl font-bold text-center mb-3">
+                    <div className="flex flex-col items-center justify-center border-r-2 border-gray-700 pr-6">
+                      <div className="text-6xl mb-4 opacity-80">⚽</div>
+                      <h3 className="text-3xl font-black text-white text-center mb-4 tracking-tight">
                         {prediction.canonicalHomeTeamId.replace('custom:', '').replace(/-/g, ' ')}
                       </h3>
-                      <div className="bg-white rounded-lg p-4 w-full border-2 border-blue-300">
-                        <p className="text-xs text-gray-600 font-semibold mb-2 text-center">RECENT FORM</p>
-                        <p className="text-2xl font-bold text-center tracking-widest text-blue-600">
+                      <div className="bg-white rounded-lg p-5 w-full shadow-lg border-2 border-black">
+                        <p className="text-xs text-black font-black mb-2 text-center uppercase tracking-widest">Form</p>
+                        <p className="text-3xl font-black text-black text-center tracking-widest">
                           {(prediction.feedback as any).formAnalysis?.homeRecentForm || 'N/A'}
                         </p>
                       </div>
                     </div>
 
                     {/* Away Team */}
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="text-6xl mb-4">⚽</div>
-                      <h3 className="text-2xl font-bold text-center mb-3">
+                    <div className="flex flex-col items-center justify-center border-l-2 border-gray-700 pl-6">
+                      <div className="text-6xl mb-4 opacity-80">⚽</div>
+                      <h3 className="text-3xl font-black text-white text-center mb-4 tracking-tight">
                         {prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' ')}
                       </h3>
-                      <div className="bg-white rounded-lg p-4 w-full border-2 border-purple-300">
-                        <p className="text-xs text-gray-600 font-semibold mb-2 text-center">RECENT FORM</p>
-                        <p className="text-2xl font-bold text-center tracking-widest text-purple-600">
+                      <div className="bg-white rounded-lg p-5 w-full shadow-lg border-2 border-black">
+                        <p className="text-xs text-black font-black mb-2 text-center uppercase tracking-widest">Form</p>
+                        <p className="text-3xl font-black text-black text-center tracking-widest">
                           {(prediction.feedback as any).formAnalysis?.awayRecentForm || 'N/A'}
                         </p>
                       </div>
@@ -204,9 +204,9 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                   </div>
 
                   {/* Final Verdict */}
-                  <div className="mt-8 pt-6 border-t-2 border-blue-300">
-                    <p className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">📌 Final Verdict</p>
-                    <p className="text-lg text-gray-800 leading-relaxed">
+                  <div className="mt-8 pt-8 border-t-2 border-gray-600">
+                    <p className="text-sm font-black text-gray-400 mb-3 uppercase tracking-widest">📌 Final Verdict</p>
+                    <p className="text-xl text-white font-semibold leading-relaxed">
                       {prediction.feedback.summary || 'No verdict available'}
                     </p>
                   </div>

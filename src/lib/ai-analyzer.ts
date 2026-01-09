@@ -151,8 +151,8 @@ async function generateAIAnalysis(
     },
     
     formAnalysis: {
-      homeRecentForm: `${homeTeamName} showing ${fixtureData.homeForm?.lastFiveResults?.join('-') || 'N/A'} form. AI analysis favors this team to ${aiPrediction.prediction === 'Home Win' ? 'WIN' : 'STRUGGLE'}.`,
-      awayRecentForm: `${awayTeamName} away form: ${fixtureData.awayForm?.lastFiveResults?.join('-') || 'N/A'}. Tactical setup suggests ${aiPrediction.prediction === 'Away Win' ? 'STRONG THREAT' : 'DEFENSIVE FOCUS'}.`,
+      homeRecentForm: fixtureData.homeForm?.lastFiveResults?.join('') || 'N/A',
+      awayRecentForm: fixtureData.awayForm?.lastFiveResults?.join('') || 'N/A',
     },
     
     headToHeadStats: fixtureData.headToHead ? {
@@ -388,8 +388,8 @@ function generateMockAnalysis(
     },
     
     formAnalysis: {
-      homeRecentForm: `${homeTeam} in ${homeForm?.lastFiveResults?.join('-') || 'N/A'} form. Averaging ${homeForm ? (homeForm.goalsFor/homeForm.matchesPlayed).toFixed(1) : '0'} goals/match with ${homeForm?.cleanSheets || 0} clean sheets in last ${homeForm?.matchesPlayed || 0} matches.`,
-      awayRecentForm: `${awayTeam} away record: ${awayForm?.lastFiveResults?.join('-') || 'N/A'}. Away form shows ${awayForm ? (awayForm.goalsFor/awayForm.matchesPlayed).toFixed(1) : '0'} goals/match with ${awayForm?.cleanSheets || 0} clean sheets.`,
+      homeRecentForm: homeForm?.lastFiveResults?.join('') || 'N/A',
+      awayRecentForm: awayForm?.lastFiveResults?.join('') || 'N/A',
     },
     
     headToHeadStats: fixtureData.headToHead ? {
