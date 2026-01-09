@@ -4,6 +4,110 @@
 
 ## Progress Log
 
+### [2026-01-09] - ✅ Competitions Dataset, Live Stats, Delete Functionality & Navigation
+
+**Session Summary:**
+Expanded application from basic league support to comprehensive tournament coverage including international competitions. Added critical UI features: home navigation, real-time stats calculation, and prediction deletion with proper cascade handling.
+
+**Issues Solved:**
+- Limited league coverage (only domestic leagues, no international competitions)
+- No home button for navigation back to dashboard
+- Stats (total/completed/pending) always showing 0 - not calculated from actual data
+- No ability to delete past predictions
+- Delete functionality failing due to database foreign key constraints
+- Next.js 15+ async params compatibility issues in dynamic routes
+
+**Root Causes:**
+- Inline league arrays in create form - not shared across app
+- Stats were hardcoded to 0 instead of calculated from predictions array
+- Missing DELETE API endpoint
+- Incorrect cascade deletion order (citations reference feedback, must delete first)
+- Direct access to `params.id` instead of awaiting Promise in Next.js 15+
+
+**Complete Solution:**
+- **Centralized Competitions Dataset:**
+  - Created `src/lib/competitions.ts` with 9 tournaments:
+    - Domestic: Premier League, La Liga, Serie A, Bundesliga, Ligue 1
+    - International: AFCON, Champions League, World Cup, UEFA Euros
+  - Each competition includes full team rosters (20-24 teams for domestic, 24-32 for international)
+  - Sample fixtures with kickoff times for quick prediction creation
+  - Helper functions: `competitionNameFromCanonical()`, `teamNameFromCanonical()`
+
+- **Create Form Integration:**
+  - Replaced inline leagues with shared competitions import
+  - Competition dropdown with all 9 tournaments + icons
+  - Team dropdowns populated from selected competition's full roster
+  - Fixture quick-fill buttons with formatted dates and hover effects
+  - Proper state management with `selectedCompetitionId`
+
+- **Home Navigation:**
+  - Added "← Home" button to predictions page linking to `/dashboard`
+  - Placed alongside "+ New Prediction" button in header
+
+- **Live Stats Calculation:**
+  - Implemented `useMemo` to calculate stats from predictions array:
+    - Total predictions count
+    - Completed (status === "completed")
+    - Pending (status === "pending")
+    - Processing (status === "processing")
+  - Stats grid with color-coded cards (gray/green/yellow/blue)
+  - Updates in real-time as predictions change
+
+- **Delete Functionality:**
+  - Created DELETE endpoint at `src/app/api/predictions/[id]/route.ts`
+  - Proper cascade deletion order to handle foreign keys:
+    1. Citations (reference feedback)
+    2. Feedback (reference prediction)
+    3. Sources (reference prediction)
+    4. Prediction
+  - Session authentication and ownership verification
+  - Client-side delete button with trash icon (appears on card hover)
+  - Loading state with spinner during deletion
+  - Confirmation dialog before delete
+  - State update to remove card from UI on success
+
+- **Next.js 15+ Compatibility:**
+  - Fixed async params handling: `const { id } = await context.params`
+  - Changed params type to `Promise<{ id: string }>` (no union type)
+  - Proper awaiting before accessing params properties
+
+**Files Modified:**
+- `src/lib/competitions.ts` - NEW: Centralized competition/team dataset
+- `src/app/predictions/create/page.tsx` - Integrated competitions with dropdown
+- `src/app/predictions/page.tsx` - Added home button
+- `src/components/predictions/predictions-list.tsx` - Live stats, delete button, competition filter
+- `src/app/api/predictions/[id]/route.ts` - NEW: DELETE endpoint with cascade
+- Multiple syntax error fixes during rapid iterations
+
+**Database Relationships Handled:**
+```
+Prediction
+  ├── Feedback
+  │     └── Citations (FK: feedbackId)
+  └── Sources
+
+Deletion Order: Citations → Feedback → Sources → Prediction
+```
+
+**How to Use:**
+- **Navigate:** Click "← Home" button on predictions page to return to dashboard
+- **Stats:** View real-time counts at top of predictions page (auto-calculated)
+- **Delete:** Hover over prediction card, click red trash icon, confirm deletion
+- **Competitions:** Create form now has dropdown with 9 tournaments and full team lists
+
+**Verified Working:**
+- ✅ All 9 competitions available in create form
+- ✅ Full team rosters for each competition
+- ✅ Home button navigation functional
+- ✅ Stats calculating correctly from data
+- ✅ Delete endpoint returning 200 status
+- ✅ Cascade deletion handling all foreign keys
+- ✅ UI updating after successful deletion
+
+**Status:** ✅ Complete - Full CRUD operations with proper navigation and stats
+
+---
+
 ### [2026-01-06] - ✅ PRODUCTION-READY MVP - Full Queue System Operational
 
 **Session Summary:**
