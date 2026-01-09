@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, FormEvent, useMemo } from "react";
+import { useState, FormEvent, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { competitions, competitionMap } from "@/lib/competitions";
 import { marketOptions, marketLabels } from "@/lib/prediction-constants";
+import { LEAGUE_CODES, FootballFixture, LeagueSlug } from "@/lib/football-data";
 
 export default function CreatePredictionPage() {
   const router = useRouter();
@@ -14,11 +15,14 @@ export default function CreatePredictionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [fixtures, setFixtures] = useState<FootballFixture[]>([]);
+  const [fixturesLoading, setFixturesLoading] = useState(false);
 
-  const defaultCompetitionId = competitionMap["premier-league"] ? "premier-league" : competitions[0]?.id || "";
+  const defaultCompetitionId = "premier-league";
   const defaultCompetitionName = competitionMap[defaultCompetitionId]?.name || competitions[0]?.name || "";
 
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(defaultCompetitionId);
+  const [selectedLeague, setSelectedLeague] = useState<LeagueSlug>("premier-league");
   const [formData, setFormData] = useState({
     competition: defaultCompetitionName,
     homeTeam: "",
@@ -36,6 +40,29 @@ export default function CreatePredictionPage() {
   const competitionTeams = activeCompetition?.teams || [];
   const competitionFixtures = activeCompetition?.fixtures || [];
 
+  // Fetch real fixtures from Football Data API
+  useEffect(() => {
+    async function loadFixtures() {
+      if (!selectedLeague) return;
+      
+      setFixturesLoading(true);
+      try {
+        const response = await fetch(`/api/fixtures?league=${selectedLeague}&limit=10`);
+        if (response.ok) {
+          const data = await response.json();
+          setFixtures(data.fixtures || []);
+        }
+      } catch (err) {
+        console.error("Error loading fixtures:", err);
+        setFixtures([]);
+      } finally {
+        setFixturesLoading(false);
+      }
+    }
+
+    loadFixtures();
+  }, [selectedLeague]);
+
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -51,6 +78,17 @@ export default function CreatePredictionPage() {
     router.push("/auth/signin");
     return null;
   }
+
+  const handleFixtureSelect = (fixture: FootballFixture) => {
+    setFormData(prev => ({
+      ...prev,
+      homeTeam: fixture.homeTeam,
+      awayTeam: fixture.awayTeam,
+      competition: fixture.competition,
+      kickoffTime: fixture.kickoff ? new Date(fixture.kickoff).toISOString().slice(0, 16) : "",
+      odds: fixture.odds?.homeWin ? fixture.odds.homeWin.toString() : "",
+    }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -159,6 +197,63 @@ export default function CreatePredictionPage() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+          {/* Football Data League Selection */}
+          <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+            <h2 className="text-lg font-semibold text-blue-900">⚽ Real Fixtures from Football Data</h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select League</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {Object.entries(LEAGUE_CODES).map(([slug, config]) => (
+                  <button
+                    key={slug}
+                    type="button"
+                    onClick={() => setSelectedLeague(slug as LeagueSlug)}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      selectedLeague === slug
+                        ? "bg-blue-600 text-white ring-2 ring-blue-300"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {config.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Fixtures */}
+            {fixturesLoading ? (
+              <div className="flex items-center gap-2 text-gray-600">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                Loading fixtures...
+              </div>
+            ) : fixtures.length > 0 ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Matches</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {fixtures.map((fixture) => (
+                    <button
+                      key={fixture.id}
+                      type="button"
+                      onClick={() => handleFixtureSelect(fixture)}
+                      className="w-full text-left p-3 rounded-lg border border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    >
+                      <div className="font-medium text-gray-900">
+                        {fixture.homeTeam} vs {fixture.awayTeam}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {new Date(fixture.kickoff).toLocaleDateString()} at{" "}
+                        {new Date(fixture.kickoff).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {fixture.odds?.homeWin && ` • Odds: ${fixture.odds.homeWin}`}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-600 text-sm">No upcoming fixtures found for this league.</div>
+            )}
+          </div>
+
           {/* Match Details */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Match Details</h2>
@@ -171,7 +266,7 @@ export default function CreatePredictionPage() {
                   id="competition-select"
                   name="competition-select"
                   value={selectedCompetitionId}
-                  onChange={(e) => handleCompetitionChange(e.target.value)}
+                  onChange={(e) => setSelectedCompetitionId(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {competitions.map((competition) => (
@@ -201,37 +296,31 @@ export default function CreatePredictionPage() {
                 <label htmlFor="homeTeam" className="block text-sm font-medium text-gray-700 mb-1">
                   Home Team *
                 </label>
-                <select
+                <input
+                  type="text"
                   id="homeTeam"
                   name="homeTeam"
                   value={formData.homeTeam}
                   onChange={handleChange}
-                  required
+                  placeholder="Auto-filled from fixture or enter manually"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select home team</option>
-                  {competitionTeams.map((team) => (
-                    <option key={team} value={team}>{team}</option>
-                  ))}
-                </select>
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="awayTeam" className="block text-sm font-medium text-gray-700 mb-1">
                   Away Team *
                 </label>
-                <select
+                <input
+                  type="text"
                   id="awayTeam"
                   name="awayTeam"
                   value={formData.awayTeam}
                   onChange={handleChange}
-                  required
+                  placeholder="Auto-filled from fixture or enter manually"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select away team</option>
-                  {competitionTeams.map((team) => (
-                    <option key={team} value={team}>{team}</option>
-                  ))}
-                </select>
+                  required
+                />
               </div>
             </div>
 
