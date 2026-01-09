@@ -155,17 +155,6 @@ export default function CreatePredictionPage() {
     }));
   };
 
-  const handleFixtureSelect = (fixture: { home: string; away: string; kickoff: string }) => {
-    const localKickoff = new Date(fixture.kickoff);
-    const localValue = localKickoff.toISOString().slice(0, 16);
-    setFormData((prev) => ({
-      ...prev,
-      homeTeam: fixture.home,
-      awayTeam: fixture.away,
-      kickoffTime: localValue,
-    }));
-  };
-
   const currentMarketOptions = marketOptions[formData.market] || [];
 
   return (
