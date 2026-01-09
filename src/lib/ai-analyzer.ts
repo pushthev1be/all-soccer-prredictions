@@ -26,6 +26,31 @@ interface AnalysisResult {
   citations: Citation[];
   llmModel: string;
   processingTimeMs: number;
+  // Enhanced fields
+  teamComparison?: {
+    home: string;
+    away: string;
+  };
+  formAnalysis?: {
+    homeRecentForm: string;
+    awayRecentForm: string;
+  };
+  headToHeadStats?: {
+    homeWins: number;
+    draws: number;
+    awayWins: number;
+    totalMatches: number;
+  };
+  marketInsight?: {
+    impliedProbability: string;
+    odds: {
+      homeWin?: number;
+      draw?: number;
+      awayWin?: number;
+    };
+  };
+  tacticalAnalysis?: string[];
+  injuryNews?: string[];
 }
 
 const ENABLE_AI_ANALYSIS = process.env.ENABLE_AI_ANALYSIS === 'true' || process.env.OPENROUTER_API_KEY;
@@ -118,6 +143,43 @@ async function generateAIAnalysis(
     citations,
     llmModel: 'llama-3.1-70b-instruct (via OpenRouter)',
     processingTimeMs: Date.now() - startTime,
+
+    // Enhanced AI-powered data fields
+    teamComparison: {
+      home: `${homeTeamName} - ${aiPrediction.prediction === 'Home Win' ? 'FAVORED' : 'TESTED'} ${fixtureData.homeForm ? `| Record: ${fixtureData.homeForm.wins}W-${fixtureData.homeForm.draws}D-${fixtureData.homeForm.losses}L | GF: ${fixtureData.homeForm.goalsFor} | GA: ${fixtureData.homeForm.goalsAgainst}` : ''}`,
+      away: `${awayTeamName} - ${aiPrediction.prediction === 'Away Win' ? 'FAVORED' : 'UNDERDOGS'} ${fixtureData.awayForm ? `| Record: ${fixtureData.awayForm.wins}W-${fixtureData.awayForm.draws}D-${fixtureData.awayForm.losses}L | GF: ${fixtureData.awayForm.goalsFor} | GA: ${fixtureData.awayForm.goalsAgainst}` : ''}`,
+    },
+    
+    formAnalysis: {
+      homeRecentForm: `${homeTeamName} showing ${fixtureData.homeForm?.lastFiveResults?.join('-') || 'N/A'} form. AI analysis favors this team to ${aiPrediction.prediction === 'Home Win' ? 'WIN' : 'STRUGGLE'}.`,
+      awayRecentForm: `${awayTeamName} away form: ${fixtureData.awayForm?.lastFiveResults?.join('-') || 'N/A'}. Tactical setup suggests ${aiPrediction.prediction === 'Away Win' ? 'STRONG THREAT' : 'DEFENSIVE FOCUS'}.`,
+    },
+    
+    headToHeadStats: fixtureData.headToHead ? {
+      homeWins: fixtureData.headToHead.homeWins,
+      draws: fixtureData.headToHead.draws,
+      awayWins: fixtureData.headToHead.awayWins,
+      totalMatches: fixtureData.headToHead.matches,
+    } : undefined,
+    
+    marketInsight: fixtureData.odds?.[0] ? {
+      impliedProbability: `Home ${(1/fixtureData.odds[0].homeWin*100).toFixed(1)}% | Draw ${(1/fixtureData.odds[0].draw*100).toFixed(1)}% | Away ${(1/fixtureData.odds[0].awayWin*100).toFixed(1)}%`,
+      odds: {
+        homeWin: fixtureData.odds[0].homeWin,
+        draw: fixtureData.odds[0].draw,
+        awayWin: fixtureData.odds[0].awayWin,
+      },
+    } : undefined,
+    
+    tacticalAnalysis: [
+      ...aiPrediction.keyFactors,
+      `AI recommends: ${aiPrediction.recommendedBet}`,
+    ],
+    
+    injuryNews: [
+      ...(fixtureData.homeInjuries?.map(i => `${homeTeamName}: ${i.playerName} (${i.position}) - ${i.severity}`) || ['No major injuries reported']),
+      ...(fixtureData.awayInjuries?.map(i => `${awayTeamName}: ${i.playerName} (${i.position}) - ${i.severity}`) || ['No major injuries reported']),
+    ],
   };
 }
 
@@ -318,5 +380,44 @@ function generateMockAnalysis(
     llmModel: 'mock-analyzer-v2-enhanced',
     
     processingTimeMs: Date.now() - startTime,
+
+    // Enhanced data fields
+    teamComparison: {
+      home: `${homeTeam} - Form: ${homeForm?.lastFiveResults?.join('-') || 'N/A'} | Record: ${homeForm?.wins}W-${homeForm?.draws}D-${homeForm?.losses}L | GF: ${homeForm?.goalsFor} | GA: ${homeForm?.goalsAgainst}`,
+      away: `${awayTeam} - Form: ${awayForm?.lastFiveResults?.join('-') || 'N/A'} | Record: ${awayForm?.wins}W-${awayForm?.draws}D-${awayForm?.losses}L | GF: ${awayForm?.goalsFor} | GA: ${awayForm?.goalsAgainst}`,
+    },
+    
+    formAnalysis: {
+      homeRecentForm: `${homeTeam} in ${homeForm?.lastFiveResults?.join('-') || 'N/A'} form. Averaging ${homeForm ? (homeForm.goalsFor/homeForm.matchesPlayed).toFixed(1) : '0'} goals/match with ${homeForm?.cleanSheets || 0} clean sheets in last ${homeForm?.matchesPlayed || 0} matches.`,
+      awayRecentForm: `${awayTeam} away record: ${awayForm?.lastFiveResults?.join('-') || 'N/A'}. Away form shows ${awayForm ? (awayForm.goalsFor/awayForm.matchesPlayed).toFixed(1) : '0'} goals/match with ${awayForm?.cleanSheets || 0} clean sheets.`,
+    },
+    
+    headToHeadStats: fixtureData.headToHead ? {
+      homeWins: fixtureData.headToHead.homeWins,
+      draws: fixtureData.headToHead.draws,
+      awayWins: fixtureData.headToHead.awayWins,
+      totalMatches: fixtureData.headToHead.matches,
+    } : undefined,
+    
+    marketInsight: odds ? {
+      impliedProbability: `Home ${(1/odds.homeWin*100).toFixed(1)}% | Draw ${(1/odds.draw*100).toFixed(1)}% | Away ${(1/odds.awayWin*100).toFixed(1)}%`,
+      odds: {
+        homeWin: odds.homeWin,
+        draw: odds.draw,
+        awayWin: odds.awayWin,
+      },
+    } : undefined,
+    
+    tacticalAnalysis: [
+      `${homeTeam} control: Possession-based approach, average ${homeForm ? (homeForm.goalsFor*100/homeForm.matchesPlayed).toFixed(0) : 'N/A'}% conversion`,
+      `${awayTeam} strategy: Counter-attacking threat with ${awayForm?.wins || 0}/${awayForm?.matchesPlayed || 1} away wins (${awayForm ? (awayForm.wins*100/awayForm.matchesPlayed).toFixed(0) : '0'}%)`,
+      'Set-piece opportunities crucial with high defensive variation',
+      'Midfield battle will determine tempo and chance creation',
+    ],
+    
+    injuryNews: [
+      ...(fixtureData.homeInjuries?.map(i => `${homeTeam}: ${i.playerName} (${i.position}) - ${i.severity}`) || ['No confirmed home team injuries']),
+      ...(fixtureData.awayInjuries?.map(i => `${awayTeam}: ${i.playerName} (${i.position}) - ${i.severity}`) || ['No confirmed away team injuries']),
+    ],
   };
 }
