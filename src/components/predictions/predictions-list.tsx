@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { PredictionCard } from "./prediction-card";
+import { PredictionsGridSkeleton } from "./predictions-grid-skeleton";
+import { EmptyState } from "./empty-state";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
@@ -93,45 +95,30 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
   };
 
   if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="mt-4 text-gray-600">Loading predictions...</p>
-      </div>
-    );
+    return <PredictionsGridSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <div className="text-red-600 mb-4">Warning: {error}</div>
-        <button
-          onClick={fetchPredictions}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          Try Again
-        </button>
-      </div>
+      <EmptyState
+        title="Unable to Load Predictions"
+        description={error}
+        actionLabel="Try Again"
+        onAction={fetchPredictions}
+        type="error"
+      />
     );
   }
 
   if (predictions.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg shadow">
-        <div className="text-gray-500 mb-6">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium">No predictions yet</h3>
-          <p className="mt-2">Create your first prediction to get AI feedback</p>
-        </div>
-        <Link
-          href="/predictions/create"
-          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
-        >
-          Create First Prediction
-        </Link>
-      </div>
+      <EmptyState
+        title="No Predictions Yet"
+        description="Create your first prediction to get AI feedback on potential outcomes and strategic insights."
+        actionLabel="Create First Prediction"
+        onAction={() => (window.location.href = "/predictions/create")}
+        type="no-data"
+      />
     );
   }
 
@@ -210,26 +197,36 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
         </div>
       )}
 
-      <div className="text-sm text-gray-500">
-        Showing {filtered.length} of {predictions.length}
-      </div>
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="No Predictions Match"
+          description="Try adjusting your filters or search query to find predictions."
+          type="no-results"
+        />
+      ) : (
+        <>
+          <div className="text-sm text-gray-500">
+            Showing {filtered.length} of {predictions.length}
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((p) => (
-          <PredictionCard
-            key={p.id}
-            prediction={{
-              id: p.id,
-              market: p.market,
-              pick: p.pick,
-              odds: typeof p.odds === "number" ? p.odds : null,
-              status: (p.status as any) || "pending",
-              reasoning: p.reasoning,
-            }}
-            variant="compact"
-          />
-        ))}
-      </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((p) => (
+              <PredictionCard
+                key={p.id}
+                prediction={{
+                  id: p.id,
+                  market: p.market,
+                  pick: p.pick,
+                  odds: typeof p.odds === "number" ? p.odds : null,
+                  status: (p.status as any) || "pending",
+                  reasoning: p.reasoning,
+                }}
+                variant="compact"
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
