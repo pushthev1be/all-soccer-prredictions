@@ -19,19 +19,53 @@ interface PredictionDetailProps {
   prediction: PredictionWithFeedback;
 }
 
-export default function PredictionDetail({ prediction }: PredictionDetailProps) {
+export default function PredictionDetail({ prediction: initialPrediction }: PredictionDetailProps) {
   const router = useRouter();
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [prediction, setPrediction] = useState(initialPrediction);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Auto-refresh the page while feedback is pending (dev convenience)
+  // Client-side polling for real-time feedback updates
   useEffect(() => {
     if (!prediction.feedback && autoRefresh) {
-      const t = setInterval(() => {
-        router.refresh();
-      }, 3000);
-      return () => clearInterval(t);
+      let isMounted = true;
+      
+      const pollFeedback = async () => {
+        try {
+          setIsRefreshing(true);
+          const response = await fetch(`/api/predictions/${prediction.id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          
+          if (!response.ok) throw new Error('Failed to fetch prediction');
+          
+          const updatedPrediction = await response.json();
+          if (isMounted) {
+            setPrediction(updatedPrediction);
+            // Stop polling once feedback is available
+            if (updatedPrediction.feedback) {
+              setAutoRefresh(false);
+            }
+          }
+        } catch (error) {
+          console.error('Polling error:', error);
+        } finally {
+          if (isMounted) {
+            setIsRefreshing(false);
+          }
+        }
+      };
+
+      // Poll every 2 seconds for live updates
+      const interval = setInterval(pollFeedback, 2000);
+      
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
     }
-  }, [prediction.feedback, autoRefresh, router]);
+  }, [prediction.id, autoRefresh]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -335,14 +369,23 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
                 {(prediction.feedback as any).injuryNews && (prediction.feedback as any).injuryNews.length > 0 && (
                   <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-600">
                     <h4 className="font-bold text-red-600 mb-3">🏥 Injury News</h4>
-                    <ul className="space-y-1 text-sm">
-                      {(prediction.feedback as any).injuryNews.map((injury: string, index: number) => (
-                        <li key={index} className="flex items-start">
-                          <span className="text-red-600 mr-2">⚠️</span>
-                          <span>{injury}</span>
-                        </li>
-                      ))}
+                    <ul className="space-y-2 text-sm">
+                      {(prediction.feedback as any).injuryNews.map((injury: string, index: number) => {
+                        // Skip placeholder injuries
+                        if (injury.includes('No confirmed') || injury.includes('No major injuries')) {
+                          return null;
+                        }
+                        return (
+                          <li key={index} className="flex items-start">
+                            <span className="text-red-600 mr-2">⚠️</span>
+                            <span>{injury}</span>
+                          </li>
+                        );
+                      }).filter(Boolean)}
                     </ul>
+                    {(!((prediction.feedback as any).injuryNews.filter((i: string) => !i.includes('No confirmed') && !i.includes('No major')).length)) && (
+                      <p className="text-sm text-gray-600 italic">No major injuries reported</p>
+                    )}
                   </div>
                 )}
 
@@ -451,28 +494,25 @@ export default function PredictionDetail({ prediction }: PredictionDetailProps) 
           ) : (
             <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded">
               <p className="text-yellow-800 font-semibold">
-                AI Analysis Pending
+                🔄 AI Analysis In Progress
               </p>
               <p className="text-yellow-700 mt-2">
-                This prediction is still being analyzed. Check back in a few
-                moments for AI feedback.
+                {isRefreshing ? 'Checking for updates...' : 'This prediction is being analyzed. Updates coming every 2 seconds.'}
               </p>
               <div className="mt-4 flex items-center gap-3">
-                <button
-                  onClick={() => router.refresh()}
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Refresh Now
-                </button>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
-                  />
-                  Auto-refresh every 3s
-                </label>
+                <div className="flex items-center gap-2">
+                  <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600"></div>
+                  <span className="text-sm text-yellow-800">{isRefreshing ? 'Refreshing...' : 'Polling for feedback'}</span>
+                </div>
               </div>
+              <label className="flex items-center gap-2 text-sm text-gray-700 mt-3">
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                />
+                Live polling active
+              </label>
             </div>
           )}
         </div>

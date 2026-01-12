@@ -59,7 +59,8 @@ Be data-driven and specific. Consider form, head-to-head, odds implications, and
     const response = await axios.post(
       `${OPENROUTER_BASE_URL}/chat/completions`,
       {
-        model: 'meta-llama/llama-3.1-70b-instruct:free',
+        // Use a reliable free endpoint
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: [
           {
             role: 'user',
@@ -121,7 +122,7 @@ export async function generateQuickAnalysis(fixture: PredictionRequest): Promise
     const response = await axios.post(
       `${OPENROUTER_BASE_URL}/chat/completions`,
       {
-        model: 'meta-llama/llama-3.1-70b-instruct:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.5,
         max_tokens: 100,

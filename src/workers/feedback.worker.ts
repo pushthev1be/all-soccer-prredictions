@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { PrismaClient } from '@prisma/client';
 import { analyzePrediction } from '@/lib/ai-analyzer';
+import { normalizeTeamName, getTeamId } from '@/lib/team-normalizer';
 
 const prisma = new PrismaClient();
 
@@ -77,11 +78,20 @@ const worker = new Worker(
       }
 
       // Extract team names from canonical IDs for logging
-      const homeTeamName = prediction.canonicalHomeTeamId.replace('custom:', '').replace(/-/g, ' ');
-      const awayTeamName = prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' ');
+      const rawHomeTeam = prediction.canonicalHomeTeamId.replace('custom:', '').replace(/-/g, ' ');
+      const rawAwayTeam = prediction.canonicalAwayTeamId.replace('custom:', '').replace(/-/g, ' ');
       const competitionName = prediction.canonicalCompetitionId.replace('custom:', '').replace(/-/g, ' ');
 
+      const homeTeamName = normalizeTeamName(rawHomeTeam);
+      const awayTeamName = normalizeTeamName(rawAwayTeam);
+
+      const homeTeamId = getTeamId(homeTeamName);
+      const awayTeamId = getTeamId(awayTeamName);
+
       console.log(`📊 Prediction found: ${homeTeamName} vs ${awayTeamName} in ${competitionName}`);
+      if (!homeTeamId || !awayTeamId) {
+        console.log(`⚠️  Missing team IDs — homeId:${homeTeamId} awayId:${awayTeamId} (raw: ${rawHomeTeam} vs ${rawAwayTeam})`);
+      }
       console.log(`   Market: ${prediction.market}, Pick: ${prediction.pick}`);
       console.log(`   Kickoff: ${prediction.kickoffTimeUTC.toISOString()}`);
       
@@ -102,6 +112,12 @@ const worker = new Worker(
           dataQualityNotes: analysis.dataQualityNotes,
           confidenceExplanation: analysis.confidenceExplanation,
           confidenceScore: analysis.confidenceScore,
+          ...(analysis.teamComparison && { teamComparison: analysis.teamComparison }),
+          ...(analysis.formAnalysis && { formAnalysis: analysis.formAnalysis }),
+          ...(analysis.headToHeadStats && { headToHeadStats: analysis.headToHeadStats }),
+          ...(analysis.marketInsight && { marketInsight: analysis.marketInsight }),
+          ...(analysis.tacticalAnalysis && analysis.tacticalAnalysis.length > 0 && { tacticalAnalysis: analysis.tacticalAnalysis }),
+          ...(analysis.injuryNews && analysis.injuryNews.length > 0 && { injuryNews: analysis.injuryNews }),
           llmModel: analysis.llmModel,
           llmPromptVersion: '1.0',
           processingTimeMs: analysis.processingTimeMs,

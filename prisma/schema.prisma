@@ -136,6 +136,14 @@ model Feedback {
   dataQualityNotes        String[]
   confidenceExplanation   String
   confidenceScore         Float
+
+  // Rich analysis fields
+  teamComparison          Json?
+  formAnalysis            Json?
+  headToHeadStats         Json?
+  marketInsight           Json?
+  tacticalAnalysis        String[]
+  injuryNews              String[]
   
   llmModel                String
   llmPromptVersion        String
@@ -178,4 +186,26 @@ model Source {
   citations    Citation[]
   
   @@map("sources")
+}
+
+model Fixture {
+  id          String   @id @default(cuid())
+  homeTeam    String
+  awayTeam    String
+  competition String
+  kickoff     DateTime
+  status      String   @default("SCHEDULED") // SCHEDULED, LIVE, FINISHED
+  homeScore   Int?
+  awayScore   Int?
+  venue       String?
+  source      String   @default("web-scraper")
+  scrapedAt   DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([competition])
+  @@index([kickoff])
+  @@index([homeTeam])
+  @@index([awayTeam])
+  @@map("fixtures")
 }

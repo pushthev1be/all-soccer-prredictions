@@ -5,6 +5,54 @@ import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { id: predictionId } = await context.params;
+
+    const prediction = await prisma.prediction.findUnique({
+      where: {
+        id: predictionId,
+        userId: session.user.id,
+      },
+      include: {
+        feedback: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!prediction) {
+      return NextResponse.json(
+        { error: "Prediction not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(prediction);
+  } catch (error) {
+    console.error("Error fetching prediction:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch prediction" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }

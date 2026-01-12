@@ -2,6 +2,7 @@ import { Prediction } from '@prisma/client';
 import axios from 'axios';
 import { sportsDataProvider, FixtureData } from './sports-data-provider';
 import { generateAIPrediction } from './ai-prediction';
+import { normalizeTeamName, getTeamId } from './team-normalizer';
 
 interface Citation {
   sourceUrl: string;
@@ -55,6 +56,10 @@ interface AnalysisResult {
 
 const ENABLE_AI_ANALYSIS = process.env.ENABLE_AI_ANALYSIS === 'true' || process.env.OPENROUTER_API_KEY;
 
+function canonicalIdToName(id: string): string {
+  return (id || '').replace('custom:', '').replace(/-/g, ' ').trim();
+}
+
 export async function analyzePrediction(prediction: Prediction): Promise<AnalysisResult> {
   const startTime = Date.now();
 
@@ -83,18 +88,24 @@ async function generateAIAnalysis(
   fixtureData: FixtureData,
   startTime: number
 ): Promise<AnalysisResult> {
-  // Use OpenRouter API for real AI analysis
-  const homeTeamName = fixtureData.homeTeam;
-  const awayTeamName = fixtureData.awayTeam;
-  const competition = fixtureData.competition;
+  // Normalize team names for consistent IDs and prompts
+  const homeTeamName = normalizeTeamName(fixtureData.homeTeam || canonicalIdToName(prediction.canonicalHomeTeamId));
+  const awayTeamName = normalizeTeamName(fixtureData.awayTeam || canonicalIdToName(prediction.canonicalAwayTeamId));
+  const competition = fixtureData.competition || canonicalIdToName(prediction.canonicalCompetitionId);
+
+  const homeTeamId = getTeamId(homeTeamName);
+  const awayTeamId = getTeamId(awayTeamName);
 
   console.log(`🤖 Sending to OpenRouter AI: ${homeTeamName} vs ${awayTeamName}`);
+  if (!homeTeamId || !awayTeamId) {
+    console.log(`ℹ️  Team IDs missing - homeId:${homeTeamId} awayId:${awayTeamId} (normalized names used)`);
+  }
 
   const aiPrediction = await generateAIPrediction({
     homeTeam: homeTeamName,
     awayTeam: awayTeamName,
     competition: competition,
-    odds: fixtureData.odds?.[0],
+    odds: fixtureData.odds,
     historicalContext: fixtureData.headToHead
       ? `H2H: ${homeTeamName} won ${fixtureData.headToHead.homeWins}/${fixtureData.headToHead.matches}`
       : undefined,
@@ -102,8 +113,8 @@ async function generateAIAnalysis(
   });
 
   if (!aiPrediction) {
-    console.warn('⚠️ AI prediction failed, using enhanced mock');
-    return generateMockAnalysis(prediction, fixtureData, startTime);
+    console.error('❌ AI prediction failed - no mock fallback');
+    throw new Error('AI analysis unavailable - please configure OPENROUTER_API_KEY');
   }
 
   console.log(`✅ AI Analysis received: ${aiPrediction.prediction} (${(aiPrediction.confidence * 100).toFixed(0)}% confident)`);
@@ -123,7 +134,7 @@ async function generateAIAnalysis(
     ],
     contradictions: fixtureData.odds
       ? [
-          `Market implied probability: ${(1 / fixtureData.odds[0].homeWin * 100).toFixed(1)}%`,
+          `Market implied probability: ${(1 / fixtureData.odds.homeWin * 100).toFixed(1)}%`,
           `AI confidence: ${(aiPrediction.confidence * 100).toFixed(0)}%`,
         ]
       : [],
@@ -134,14 +145,14 @@ async function generateAIAnalysis(
       'Dramatic odds movement indicating market shift',
     ],
     dataQualityNotes: [
-      'Analysis powered by Llama 3.1 70B via OpenRouter',
+      'Analysis powered by Mistral 7B via OpenRouter',
       'Real football data from football-data.org',
       'Live betting odds integrated',
     ],
     confidenceExplanation: `${aiPrediction.prediction} predicted with ${(aiPrediction.confidence * 100).toFixed(0)}% confidence. ${aiPrediction.reasoning}`,
     confidenceScore: aiPrediction.confidence,
     citations,
-    llmModel: 'llama-3.1-70b-instruct (via OpenRouter)',
+    llmModel: 'mistral-7b-instruct (via OpenRouter)',
     processingTimeMs: Date.now() - startTime,
 
     // Enhanced AI-powered data fields
@@ -162,12 +173,12 @@ async function generateAIAnalysis(
       totalMatches: fixtureData.headToHead.matches,
     } : undefined,
     
-    marketInsight: fixtureData.odds?.[0] ? {
-      impliedProbability: `Home ${(1/fixtureData.odds[0].homeWin*100).toFixed(1)}% | Draw ${(1/fixtureData.odds[0].draw*100).toFixed(1)}% | Away ${(1/fixtureData.odds[0].awayWin*100).toFixed(1)}%`,
+    marketInsight: fixtureData.odds ? {
+      impliedProbability: `Home ${(1/fixtureData.odds.homeWin*100).toFixed(1)}% | Draw ${(1/fixtureData.odds.draw*100).toFixed(1)}% | Away ${(1/fixtureData.odds.awayWin*100).toFixed(1)}%`,
       odds: {
-        homeWin: fixtureData.odds[0].homeWin,
-        draw: fixtureData.odds[0].draw,
-        awayWin: fixtureData.odds[0].awayWin,
+        homeWin: fixtureData.odds.homeWin,
+        draw: fixtureData.odds.draw,
+        awayWin: fixtureData.odds.awayWin,
       },
     } : undefined,
     
@@ -187,7 +198,7 @@ function buildAnalysisPrompt(prediction: Prediction, fixtureData: FixtureData): 
   const homeForm = fixtureData.homeForm;
   const awayForm = fixtureData.awayForm;
   const h2h = fixtureData.headToHead;
-  const odds = fixtureData.odds?.[0];
+  const odds = fixtureData.odds;
 
   return `Analyze this soccer/football betting prediction:
 
@@ -197,8 +208,6 @@ function buildAnalysisPrompt(prediction: Prediction, fixtureData: FixtureData): 
 - Away Team: ${fixtureData.awayTeam}
 - Kickoff: ${new Date(fixtureData.kickoff).toLocaleString()}
 - Venue: ${fixtureData.venue || 'TBD'}
-${fixtureData.referee ? `- Referee: ${fixtureData.referee}` : ''}
-${fixtureData.weather ? `- Weather: ${fixtureData.weather.conditions}, ${fixtureData.weather.temperature}°C` : ''}
 
 **Prediction:**
 - Market: ${prediction.market}
@@ -287,15 +296,14 @@ function generateCitations(fixtureData: FixtureData): Citation[] {
     });
   }
 
-  if (fixtureData.odds && fixtureData.odds.length > 0) {
-    const primaryOdds = fixtureData.odds[0];
+  if (fixtureData.odds) {
     citations.push({
-      sourceUrl: `https://odds-api/${primaryOdds.bookmaker}`,
-      sourceProvider: primaryOdds.bookmaker,
+      sourceUrl: `https://odds-api/${fixtureData.odds.bookmaker}`,
+      sourceProvider: fixtureData.odds.bookmaker,
       sourceTitle: 'Current Betting Odds',
-      sourceSnippet: `1X2: ${primaryOdds.homeWin}/${primaryOdds.draw}/${primaryOdds.awayWin}`,
+      sourceSnippet: `1X2: ${fixtureData.odds.homeWin}/${fixtureData.odds.draw}/${fixtureData.odds.awayWin}`,
       claim: 'Market sentiment and implied probabilities',
-      excerpt: `${primaryOdds.bookmaker} odds suggest ${(1/primaryOdds.homeWin*100).toFixed(1)}% home win probability, ${(1/primaryOdds.draw*100).toFixed(1)}% draw, ${(1/primaryOdds.awayWin*100).toFixed(1)}% away win.`,
+      excerpt: `${fixtureData.odds.bookmaker} odds suggest ${(1/fixtureData.odds.homeWin*100).toFixed(1)}% home win probability, ${(1/fixtureData.odds.draw*100).toFixed(1)}% draw, ${(1/fixtureData.odds.awayWin*100).toFixed(1)}% away win.`,
     });
   }
 
@@ -313,7 +321,7 @@ function generateMockAnalysis(
 
   const homeForm = fixtureData.homeForm;
   const awayForm = fixtureData.awayForm;
-  const odds = fixtureData.odds?.[0];
+  const odds = fixtureData.odds;
 
   const citations = generateCitations(fixtureData);
 
@@ -340,7 +348,7 @@ function generateMockAnalysis(
     missingChecks: [
       'Recent tactical changes and lineup rotations',
       'Schedule congestion and fatigue factors',
-      fixtureData.referee ? `Referee ${fixtureData.referee} card/penalty tendencies` : 'Referee appointment impact',
+      'Referee appointment impact',
       'Latest team news and press conference insights',
     ],
     
@@ -352,7 +360,7 @@ function generateMockAnalysis(
     keyFactors: [
       homeForm && awayForm ? `Form differential: ${homeTeam} ${homeForm.goalsFor}GF vs ${awayTeam} ${awayForm.goalsFor}GF` : 'Goal-scoring capability differential',
       'Midfield control and possession dominance',
-      fixtureData.weather ? `Weather: ${fixtureData.weather.conditions}, ${fixtureData.weather.temperature}°C` : 'Environmental conditions',
+      'Environmental conditions',
       fixtureData.headToHead ? `H2H trend: ${fixtureData.headToHead.avgHomeGoals.toFixed(1)}-${fixtureData.headToHead.avgAwayGoals.toFixed(1)} avg score` : 'Historical scoring patterns',
     ],
     

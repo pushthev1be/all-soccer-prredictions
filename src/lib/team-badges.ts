@@ -13,6 +13,17 @@ const TEAM_BADGE_MAP: Record<string, string> = {
   'brighton': 'https://media.api-sports.io/football/teams/51.png',
   'aston villa': 'https://media.api-sports.io/football/teams/66.png',
   'west ham': 'https://media.api-sports.io/football/teams/48.png',
+  'brentford': 'https://media.api-sports.io/football/teams/55.png',
+  'crystal palace': 'https://media.api-sports.io/football/teams/52.png',
+  'everton': 'https://media.api-sports.io/football/teams/45.png',
+  'nottingham forest': 'https://media.api-sports.io/football/teams/65.png',
+  'fulham': 'https://media.api-sports.io/football/teams/36.png',
+  'bournemouth': 'https://media.api-sports.io/football/teams/35.png',
+  'wolves': 'https://media.api-sports.io/football/teams/39.png',
+  'wolverhampton': 'https://media.api-sports.io/football/teams/39.png',
+  'burnley': 'https://media.api-sports.io/football/teams/44.png',
+  'leicester': 'https://media.api-sports.io/football/teams/46.png',
+  'sheffield united': 'https://media.api-sports.io/football/teams/62.png',
   
   // Serie A
   'as roma': 'https://media.api-sports.io/football/teams/87.png',
@@ -45,7 +56,12 @@ const TEAM_BADGE_MAP: Record<string, string> = {
 };
 
 export function getTeamBadgeUrl(teamName: string): string {
-  const normalizedName = teamName.toLowerCase().trim();
+  const normalizedName = teamName
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\b(football club|fc|c\.f|cf|afc|sc)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
   
   // Direct lookup
   if (TEAM_BADGE_MAP[normalizedName]) {
