@@ -7,18 +7,20 @@
 ### [2026-01-04] - ✅ BBC Sport Scraper Fix & OpenRouter AI Configuration
 
 **Session Summary:**
-Fixed the BBC Sport scraper that was returning 0 fixtures, and configured OpenRouter API for real AI feedback.
+Fixed the BBC Sport scraper that was returning 0 fixtures, configured OpenRouter API for real AI feedback, and fixed the critical issue where the worker wasn't loading environment variables.
 
 **Issues Solved:**
 - BBC Sport scraper returning 0 fixtures for all leagues
 - AI feedback showing mock data instead of real AI analysis
 - Predictions list page hanging due to queue stats timeout
+- **OpenRouter API not being called** - Worker wasn't loading .env file
 
 **Root Causes:**
 - BBC Sport changed their HTML structure - they now embed fixture data as JSON in `__INITIAL_DATA__` script tag instead of rendering DOM elements
 - Old CSS selectors (`article.sp-c-fixture`, `div.sp-c-fixture`) no longer matched any elements
 - `OPENROUTER_API_KEY` was not configured in .env
 - Queue stats import was causing Redis connection attempts that timed out
+- **Worker missing `import 'dotenv/config'`** - The worker process wasn't loading the .env file, so `OPENROUTER_API_KEY` was undefined even though it was set in .env
 
 **Complete Solution:**
 
