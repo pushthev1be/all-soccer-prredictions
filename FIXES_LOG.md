@@ -4,6 +4,73 @@
 
 ## Progress Log
 
+### [2026-01-04] - ✅ BBC Sport Scraper Fix & OpenRouter AI Configuration
+
+**Session Summary:**
+Fixed the BBC Sport scraper that was returning 0 fixtures, configured OpenRouter API for real AI feedback, and fixed the critical issue where the worker wasn't loading environment variables.
+
+**Issues Solved:**
+- BBC Sport scraper returning 0 fixtures for all leagues
+- AI feedback showing mock data instead of real AI analysis
+- Predictions list page hanging due to queue stats timeout
+- **OpenRouter API not being called** - Worker wasn't loading .env file
+
+**Root Causes:**
+- BBC Sport changed their HTML structure - they now embed fixture data as JSON in `__INITIAL_DATA__` script tag instead of rendering DOM elements
+- Old CSS selectors (`article.sp-c-fixture`, `div.sp-c-fixture`) no longer matched any elements
+- `OPENROUTER_API_KEY` was not configured in .env
+- Queue stats import was causing Redis connection attempts that timed out
+- **Worker missing `import 'dotenv/config'`** - The worker process wasn't loading the .env file, so `OPENROUTER_API_KEY` was undefined even though it was set in .env
+
+**Complete Solution:**
+
+1. **BBC Sport Scraper Rewrite:**
+   - Rewrote `src/lib/scrapers/football-scraper.ts` to parse embedded JSON instead of CSS selectors
+   - Extracts `__INITIAL_DATA__` from HTML using regex
+   - Parses JSON structure: `data['sport-data-scores-fixtures?...'].data.eventGroups[].secondaryGroups[].events[]`
+   - Maps BBC data fields to Fixture model:
+     - `home.fullName` → `homeTeam`
+     - `away.fullName` → `awayTeam`
+     - `tournament.name` → `competition`
+     - `startDateTime` → `kickoff`
+     - `status` → `status`
+   - Tested successfully: **82 fixtures scraped** across 6 competitions
+
+2. **OpenRouter API Configuration:**
+   - Added `OPENROUTER_API_KEY` to .env for real AI analysis
+   - AI analyzer uses Mistral 7B model via OpenRouter
+   - Requires Redis + worker process to generate feedback
+
+3. **UI Polish:**
+   - Sign-in page: gradient background, user icon, improved typography
+   - Predictions page: white background, larger container, responsive layout
+   - Added 2-second timeout for queue stats to prevent page hanging
+
+**Files Modified:**
+- `src/lib/scrapers/football-scraper.ts` - Complete rewrite of BBC scraper
+- `src/app/api/predictions/route.ts` - Added queue stats timeout
+- `src/app/auth/signin/page.tsx` - UI polish
+- `src/app/predictions/page.tsx` - UI polish
+- `.env` - Added OpenRouter API key
+
+**Scraping Results:**
+- Premier League: 20 fixtures
+- UEFA Champions League: 20 fixtures
+- Bundesliga: 20 fixtures
+- Ligue 1: 20 fixtures
+- La Liga: 1 fixture
+- Serie A: 1 fixture
+- **Total: 82 fixtures**
+
+**How to Test:**
+1. Go to `/admin/scraping`
+2. Click "Force Scrape All Leagues"
+3. Verify fixtures are scraped (should show 50+ fixtures)
+
+**Status:** ✅ Complete - Scraper working, AI configured (needs Redis for feedback)
+
+---
+
 ### [2026-01-12] - ✅ Real Football Data System & Web Scraping Complete
 
 **Session Summary:**
@@ -828,4 +895,3 @@ npm run dev:down
 - [src/lib/auth.ts](src/lib/auth.ts) — EmailProvider now conditional on env vars.
 
 **Status:** ✅ Complete — Dev ergonomics improved; predictions complete in dev without worker; queue visibility added; auth 500s mitigated.
-

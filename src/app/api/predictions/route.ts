@@ -324,17 +324,23 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.prediction.count({ where });
 
-    // Get queue stats if available
+    // Get queue stats if available (with timeout to prevent hanging)
     let queueStats = null;
     let workerHint: string | null = null;
     try {
-      const { getQueueStats } = await import('@/lib/queue');
-      queueStats = await getQueueStats();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Queue stats timeout')), 2000)
+      );
+      const statsPromise = (async () => {
+        const { getQueueStats } = await import('@/lib/queue');
+        return await getQueueStats();
+      })();
+      queueStats = await Promise.race([statsPromise, timeoutPromise]) as any;
       if (queueStats && queueStats.waiting > 0 && queueStats.active === 0) {
         workerHint = 'Jobs are waiting but no worker is active. Start the worker with "npm run worker" or run both with "npm run dev:all".';
       }
     } catch (queueError) {
-      console.log("Queue stats unavailable:", queueError);
+      // Queue stats unavailable or timed out - continue without them
     }
 
     return NextResponse.json({

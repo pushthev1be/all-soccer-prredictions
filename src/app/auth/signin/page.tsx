@@ -50,9 +50,17 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Sign In</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md border border-gray-100">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+          <p className="text-gray-500 mt-2">Sign in to access your predictions</p>
+        </div>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
@@ -73,7 +81,7 @@ export default function SignIn() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
               placeholder="your@email.com"
             />
           </div>
@@ -82,7 +90,7 @@ export default function SignIn() {
             type="button"
             onClick={handleTestLogin}
             disabled={testLoading || !email}
-            className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 shadow-sm hover:shadow-md"
           >
             {testLoading ? "Signing in..." : "Quick Sign In (Dev)"}
           </button>
@@ -100,7 +108,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
               {loading ? "Sending link..." : "Sign In with Email Link"}
             </button>

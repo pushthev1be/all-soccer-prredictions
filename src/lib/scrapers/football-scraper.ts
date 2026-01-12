@@ -29,6 +29,7 @@ export class FootballScraper {
   private currentAgentIndex = 0;
 
   // BBC Sport - Premier League Fixtures
+  // BBC embeds fixture data as JSON in __INITIAL_DATA__ script tag
   async scrapeBBCFixtures(competition: string = 'premier-league'): Promise<ScrapedFixture[]> {
     const urls: Record<string, string> = {
       'premier-league': 'https://www.bbc.com/sport/football/premier-league/scores-fixtures',
@@ -49,57 +50,76 @@ export class FootballScraper {
           'User-Agent': this.rotateUserAgent(),
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
+          'Accept-Encoding': 'gzip, deflate',
           'Connection': 'keep-alive',
         },
         timeout: 15000,
       });
 
-      const $ = cheerio.load(data);
       const fixtures: ScrapedFixture[] = [];
 
-      // BBC Sport uses specific data attributes for fixtures
-      $('article.sp-c-fixture, div.sp-c-fixture').each((_, element) => {
-        try {
-          const $el = $(element);
-          
-          // Try multiple selectors for team names
-          let homeTeam = $el.find('.sp-c-fixture__team--home .sp-c-fixture__team-name-trunc, .sp-c-fixture__team--home .qa-full-team-name').first().text().trim();
-          let awayTeam = $el.find('.sp-c-fixture__team--away .sp-c-fixture__team-name-trunc, .sp-c-fixture__team--away .qa-full-team-name').first().text().trim();
-          
-          // Fallback to abbr if full name not found
-          if (!homeTeam) {
-            homeTeam = $el.find('.sp-c-fixture__team--home abbr').attr('title') || '';
-          }
-          if (!awayTeam) {
-            awayTeam = $el.find('.sp-c-fixture__team--away abbr').attr('title') || '';
-          }
+      // BBC embeds fixture data as JSON in __INITIAL_DATA__ script
+      const initialDataMatch = data.match(/__INITIAL_DATA__="(.+?)";<\/script>/);
+      if (!initialDataMatch) {
+        console.log('⚠️ No __INITIAL_DATA__ found in BBC page');
+        return [];
+      }
 
-          // Get date/time
-          const dateStr = $el.find('.sp-c-fixture__date, time').first().text().trim();
-          const timeStr = $el.find('.sp-c-fixture__number--time').first().text().trim();
-          
-          // Get status
-          const statusText = $el.find('.sp-c-fixture__status-wrapper').text().trim();
-          const isFinished = statusText.toLowerCase().includes('ft') || statusText.toLowerCase().includes('full-time');
-          
-          if (homeTeam && awayTeam && !isFinished) {
-            fixtures.push({
-              homeTeam: this.cleanTeamName(homeTeam),
-              awayTeam: this.cleanTeamName(awayTeam),
-              competition: this.mapCompetitionName(competition),
-              kickoff: this.parseDate(dateStr, timeStr),
-              status: 'SCHEDULED',
-              venue: `${this.cleanTeamName(homeTeam)} Stadium`
-            });
-          }
-        } catch (err) {
-          console.error('Error parsing fixture element:', err);
+      try {
+        // Unescape the JSON string (BBC double-escapes it)
+        const jsonStr = initialDataMatch[1]
+          .replace(/\\\\"/g, '"')
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
+        
+        const initialData = JSON.parse(jsonStr);
+        
+        // Find the scores-fixtures data in the response
+        const dataKeys = Object.keys(initialData.data || {});
+        const fixturesKey = dataKeys.find(key => key.includes('sport-data-scores-fixtures'));
+        
+        if (!fixturesKey || !initialData.data[fixturesKey]?.data?.eventGroups) {
+          console.log('⚠️ No eventGroups found in BBC data');
+          return [];
         }
-      });
 
-      console.log(`✅ BBC scraped ${fixtures.length} fixtures for ${competition}`);
-      return fixtures.slice(0, 20); // Limit to 20 fixtures
+        const eventGroups = initialData.data[fixturesKey].data.eventGroups;
+        
+        // Extract fixtures from each event group
+        for (const group of eventGroups) {
+          if (!group.secondaryGroups) continue;
+          
+          for (const secondaryGroup of group.secondaryGroups) {
+            if (!secondaryGroup.events) continue;
+            
+            for (const event of secondaryGroup.events) {
+              // Skip finished matches
+              if (event.status === 'RESULT' || event.status === 'FINISHED') continue;
+              
+              const homeTeam = event.home?.fullName || event.home?.shortName;
+              const awayTeam = event.away?.fullName || event.away?.shortName;
+              
+              if (homeTeam && awayTeam) {
+                fixtures.push({
+                  homeTeam: this.cleanTeamName(homeTeam),
+                  awayTeam: this.cleanTeamName(awayTeam),
+                  competition: this.mapCompetitionName(competition),
+                  kickoff: event.startDateTime || this.parseDate(event.date, event.time),
+                  status: event.status === 'LIVE' ? 'LIVE' : 'SCHEDULED',
+                  venue: `${this.cleanTeamName(homeTeam)} Stadium`
+                });
+              }
+            }
+          }
+        }
+
+        console.log(`✅ BBC scraped ${fixtures.length} fixtures for ${competition}`);
+        return fixtures.slice(0, 20); // Limit to 20 fixtures
+        
+      } catch (parseError) {
+        console.error('Error parsing BBC JSON data:', parseError);
+        return [];
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error(`BBC Scraper failed for ${competition}: ${error.message}`);
