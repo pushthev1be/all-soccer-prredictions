@@ -292,102 +292,86 @@ export default function PredictionDetail({ prediction: initialPrediction }: Pred
                   </p>
                 </div>
 
-                {/* Team Comparison Details Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-4 rounded-lg border-l-4 border-purple-600 shadow-sm">
-                    <h4 className="font-bold text-purple-600 mb-2">📊 Team Comparison</h4>
-                    {(prediction.feedback as any).teamComparison ? (
-                      <div className="space-y-2 text-sm">
-                        <p><span className="font-semibold">Home:</span> {(prediction.feedback as any).teamComparison.home}</p>
-                        <p><span className="font-semibold">Away:</span> {(prediction.feedback as any).teamComparison.away}</p>
-                      </div>
-                    ) : <p className="text-gray-600">No comparison data</p>}
+                {/* CRITICAL STATS - Two Row Comparison */}
+                {(prediction.feedback as any).teamComparison && (
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200">
+                    <h3 className="text-lg font-bold text-purple-700 mb-4 flex items-center gap-2">
+                      <span>📊</span> CRITICAL MATCH STATS
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm border-collapse">
+                        <thead>
+                          <tr className="bg-purple-100 border-b-2 border-purple-300">
+                            <th className="text-left p-3 font-bold text-purple-800">Team</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Ranking</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Season Form</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Recent</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Head-to-Head</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Injuries</th>
+                            <th className="text-left p-3 font-bold text-purple-800">Twitter Buzz</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Home Team Row */}
+                          <tr className="border-b border-purple-200 bg-white hover:bg-purple-50">
+                            <td className="p-3 font-bold text-gray-900">{(prediction.feedback as any).teamComparison.home.name}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.home.ranking}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.home.seasonForm}</td>
+                            <td className="p-3 text-gray-700 font-mono text-xs">{(prediction.feedback as any).teamComparison.home.recentForm}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.home.headToHead}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.home.injuries}</td>
+                            <td className="p-3 text-gray-600 text-xs italic">{(prediction.feedback as any).teamComparison.home.twitterBuzz}</td>
+                          </tr>
+                          {/* Away Team Row */}
+                          <tr className="bg-white hover:bg-purple-50">
+                            <td className="p-3 font-bold text-gray-900">{(prediction.feedback as any).teamComparison.away.name}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.away.ranking}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.away.seasonForm}</td>
+                            <td className="p-3 text-gray-700 font-mono text-xs">{(prediction.feedback as any).teamComparison.away.recentForm}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.away.headToHead}</td>
+                            <td className="p-3 text-gray-700">{(prediction.feedback as any).teamComparison.away.injuries}</td>
+                            <td className="p-3 text-gray-600 text-xs italic">{(prediction.feedback as any).teamComparison.away.twitterBuzz}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
+                )}
 
-                  <div className="bg-white p-4 rounded-lg border-l-4 border-indigo-600 shadow-sm">
-                    <h4 className="font-bold text-indigo-600 mb-2">📈 Season Stats</h4>
-                    {(prediction.feedback as any).formAnalysis ? (
-                      <div className="space-y-1 text-xs">
-                        <p><span className="font-semibold">Home Form:</span> {(prediction.feedback as any).formAnalysis.homeRecentForm}</p>
-                        <p><span className="font-semibold">Away Form:</span> {(prediction.feedback as any).formAnalysis.awayRecentForm}</p>
-                      </div>
-                    ) : <p className="text-gray-600">No stats data</p>}
-                  </div>
-                </div>
+                {/* Market Odds - Keep this separate for clarity */}
+                <div className="grid grid-cols-1 gap-6">
 
-                {/* H2H & Market Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-4 rounded-lg border-l-4 border-orange-600 shadow-sm">
-                    <h4 className="font-bold text-orange-600 mb-3">⚔️ Head-to-Head</h4>
-                    {(prediction.feedback as any).headToHeadStats ? (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Home Wins:</span>
-                          <span className="font-bold">{(prediction.feedback as any).headToHeadStats.homeWins}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Away Wins:</span>
-                          <span className="font-bold">{(prediction.feedback as any).headToHeadStats.awayWins}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Draws:</span>
-                          <span className="font-bold">{(prediction.feedback as any).headToHeadStats.draws}</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2 mt-2">
-                          <span>Total:</span>
-                          <span className="font-bold">{(prediction.feedback as any).headToHeadStats.totalMatches} matches</span>
-                        </div>
-                      </div>
-                    ) : <p className="text-gray-600">No H2H data</p>}
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg border-l-4 border-green-600 shadow-sm">
-                    <h4 className="font-bold text-green-600 mb-3">💰 Market Odds</h4>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border-l-4 border-green-600 shadow-lg">
+                    <h4 className="font-bold text-green-700 mb-4 text-lg">💰 Market Odds & Value</h4>
                     {(prediction.feedback as any).marketInsight ? (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Home Win:</span>
-                          <span className="font-bold">{(prediction.feedback as any).marketInsight.odds.homeWin?.toFixed(2)}</span>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Home Win</div>
+                            <div className="text-2xl font-bold text-green-700">{(prediction.feedback as any).marketInsight.odds.homeWin?.toFixed(2)}</div>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Draw</div>
+                            <div className="text-2xl font-bold text-green-700">{(prediction.feedback as any).marketInsight.odds.draw?.toFixed(2)}</div>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Away Win</div>
+                            <div className="text-2xl font-bold text-green-700">{(prediction.feedback as any).marketInsight.odds.awayWin?.toFixed(2)}</div>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Draw:</span>
-                          <span className="font-bold">{(prediction.feedback as any).marketInsight.odds.draw?.toFixed(2)}</span>
+                        <div className="bg-white p-3 rounded-lg shadow-sm">
+                          <p className="text-xs text-gray-600 mb-2">Implied Probabilities:</p>
+                          <p className="text-sm font-semibold text-gray-800">{(prediction.feedback as any).marketInsight.impliedProbability}</p>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Away Win:</span>
-                          <span className="font-bold">{(prediction.feedback as any).marketInsight.odds.awayWin?.toFixed(2)}</span>
-                        </div>
-                        <div className="border-t pt-2 mt-2">
-                          <p className="text-xs text-gray-600">Implied: {(prediction.feedback as any).marketInsight.impliedProbability}</p>
-                        </div>
+                        {(prediction.feedback as any).marketInsight.valueAssessment && (
+                          <div className="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded">
+                            <p className="text-sm font-bold text-yellow-800">{(prediction.feedback as any).marketInsight.valueAssessment}</p>
+                          </div>
+                        )}
                       </div>
                     ) : <p className="text-gray-600">No odds data</p>}
                   </div>
                 </div>
-
-                {/* Injury News */}
-                {(prediction.feedback as any).injuryNews && (prediction.feedback as any).injuryNews.length > 0 && (
-                  <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-600">
-                    <h4 className="font-bold text-red-600 mb-3">🏥 Injury News</h4>
-                    <ul className="space-y-2 text-sm">
-                      {(prediction.feedback as any).injuryNews.map((injury: string, index: number) => {
-                        // Skip placeholder injuries
-                        if (injury.includes('No confirmed') || injury.includes('No major injuries')) {
-                          return null;
-                        }
-                        return (
-                          <li key={index} className="flex items-start">
-                            <span className="text-red-600 mr-2">⚠️</span>
-                            <span>{injury}</span>
-                          </li>
-                        );
-                      }).filter(Boolean)}
-                    </ul>
-                    {(!((prediction.feedback as any).injuryNews.filter((i: string) => !i.includes('No confirmed') && !i.includes('No major')).length)) && (
-                      <p className="text-sm text-gray-600 italic">No major injuries reported</p>
-                    )}
-                  </div>
-                )}
 
                 {/* Strengths & Risks */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -424,18 +408,60 @@ export default function PredictionDetail({ prediction: initialPrediction }: Pred
                   </div>
                 </div>
 
-                {/* Tactical Analysis */}
-                {(prediction.feedback as any).tacticalAnalysis && (prediction.feedback as any).tacticalAnalysis.length > 0 && (
-                  <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-600">
-                    <h4 className="font-bold text-yellow-600 mb-3">🎯 Tactical Analysis</h4>
-                    <ul className="space-y-2 text-sm">
-                      {(prediction.feedback as any).tacticalAnalysis.map((item: string, index: number) => (
-                        <li key={index} className="flex items-start">
-                          <span className="text-yellow-600 font-bold mr-2">→</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                {/* Tactical Analysis - Strengths & Weaknesses */}
+                {(prediction.feedback as any).tacticalAnalysis && 
+                 (prediction.feedback as any).tacticalAnalysis.strengths &&
+                 (prediction.feedback as any).tacticalAnalysis.weaknesses && (
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-lg border-l-4 border-yellow-600">
+                    <h3 className="text-lg font-bold text-yellow-700 mb-4 flex items-center gap-2">
+                      <span>🎯</span> TACTICAL BREAKDOWN
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                      {/* Strengths */}
+                      <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 className="font-bold text-green-600 mb-3 flex items-center gap-2">
+                          <span>✅</span> Strengths
+                        </h4>
+                        {Object.entries((prediction.feedback as any).tacticalAnalysis.strengths || {}).map(([team, items]: [string, any]) => (
+                          <div key={team} className="mb-3">
+                            <p className="font-semibold text-sm text-gray-700 mb-1">{team}:</p>
+                            <ul className="space-y-1">
+                              {items && items.length > 0 ? items.map((item: string, idx: number) => (
+                                <li key={idx} className="text-xs text-gray-600 flex items-start">
+                                  <span className="text-green-500 mr-1">•</span>
+                                  <span>{item}</span>
+                                </li>
+                              )) : <li className="text-xs text-gray-400 italic">No major strengths identified</li>}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Weaknesses */}
+                      <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 className="font-bold text-red-600 mb-3 flex items-center gap-2">
+                          <span>⚠️</span> Weaknesses
+                        </h4>
+                        {Object.entries((prediction.feedback as any).tacticalAnalysis.weaknesses || {}).map(([team, items]: [string, any]) => (
+                          <div key={team} className="mb-3">
+                            <p className="font-semibold text-sm text-gray-700 mb-1">{team}:</p>
+                            <ul className="space-y-1">
+                              {items && items.length > 0 ? items.map((item: string, idx: number) => (
+                                <li key={idx} className="text-xs text-gray-600 flex items-start">
+                                  <span className="text-red-500 mr-1">•</span>
+                                  <span>{item}</span>
+                                </li>
+                              )) : <li className="text-xs text-gray-400 italic">No critical weaknesses detected</li>}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Bottom Line */}
+                    {(prediction.feedback as any).tacticalAnalysis.bottomLine && (
+                      <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg border border-yellow-300">
+                        <p className="text-sm font-bold text-yellow-800">💡 Bottom Line: {(prediction.feedback as any).tacticalAnalysis.bottomLine}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 

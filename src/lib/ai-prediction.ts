@@ -21,6 +21,8 @@ export interface PredictionRequest {
   };
   historicalContext?: string;
   userReasoning?: string;
+  serpApiContext?: string; // NEW: SerpAPI enriched data
+  gamblingMode?: boolean;   // NEW: Enable aggressive betting tone
 }
 
 export interface AIPredictor {
@@ -139,15 +141,26 @@ export async function generateAIPrediction(fixture: PredictionRequest): Promise<
     return null;
   }
 
-  const prompt = `You are an expert football/soccer betting analyst. Analyze this match and provide a detailed prediction.
+  const gamblingTone = fixture.gamblingMode ? `
+**GAMBLING MODE ACTIVATED** 🎲
+You are a sharp sports bettor, not a conservative analyst. Your job is to find edges and make aggressive calls.
+- Speak with confidence, not hedging language
+- Focus on VALUE and where bookies are vulnerable  
+- Use betting slang ("hammer this", "fade the public", "trap game", "sharp money")
+- Give specific bet recommendations with conviction
+- Acknowledge risks but don't be timid
+` : '';
+
+  const prompt = `You are an elite football/soccer betting analyst with years of sharp betting experience. ${gamblingTone}
 
 **Match Details:**
 - Home Team: ${fixture.homeTeam}
 - Away Team: ${fixture.awayTeam}
 - Competition: ${fixture.competition}
 ${fixture.odds ? `- Odds: Home ${fixture.odds.homeWin} | Draw ${fixture.odds.draw} | Away ${fixture.odds.awayWin}` : ''}
-${fixture.historicalContext ? `- Context: ${fixture.historicalContext}` : ''}
-${fixture.userReasoning ? `- User's Initial Reasoning: ${fixture.userReasoning}` : ''}
+${fixture.historicalContext ? `- H2H: ${fixture.historicalContext}` : ''}
+${fixture.userReasoning ? `- User's Angle: ${fixture.userReasoning}` : ''}
+${fixture.serpApiContext ? `\n${fixture.serpApiContext}\n` : ''}
 
 **Your Task:**
 Provide a structured prediction in valid JSON format (no markdown, no code blocks, just pure JSON):
