@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "npm run dev:all",
     "worker": "tsx src/workers/feedback.worker.ts",
     "dev:worker": "npm run worker",
     "tokens:build": "tsx scripts/tokens/import-tokens.ts",
