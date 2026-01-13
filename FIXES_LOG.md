@@ -4,6 +4,95 @@
 
 ## Progress Log
 
+### [2026-01-13 Part 6] - 🎨 UI Restructuring & Critical Analysis Improvements
+
+**Session Summary:**
+Completely restructured the prediction analysis UI to be more critical, data-driven, and actionable. Replaced scattered generic sections with consolidated, decision-focused information that actually helps users make better betting picks.
+
+**Major Changes:**
+
+1. **Two-Row Critical Stats Table** 🏆
+   - Single comprehensive comparison showing ALL critical data
+   - Columns: Team Name, Ranking, Season Form, Recent Form, H2H, Injuries, Twitter Buzz
+   - No more scattered sections - everything in one place
+   - Clean visual hierarchy with gradient backgrounds
+   - Faster decision-making for users
+
+2. **Tactical Analysis Redesigned** 🎯
+   - **Before:** Generic bullet point lists
+   - **After:** Actual strengths vs weaknesses per team
+   - Real competitive advantages identified (strong attack, defensive discipline, momentum, H2H dominance)
+   - Real concerns highlighted (poor form, key injuries, defensive issues)
+   - Bottom line assessment for quick takeaway
+   - Side-by-side comparison for easy contrast
+
+3. **Enhanced Market Insight** 💰
+   - Added **Value Assessment** based on AI confidence vs market odds:
+     - 🔥 "High confidence pick - market may be undervaluing this" (confidence > 70%)
+     - ✅ "Moderate edge detected" (confidence > 50%)
+     - ⚠️ "Coin flip - avoid or go small" (confidence ≤ 50%)
+   - Shows if AI analysis aligns with betting odds
+   - Implied probabilities displayed clearly
+   - Helps identify when to take the bet vs pass
+
+4. **Improved Visual Hierarchy** 🎨
+   - Gradient backgrounds for visual appeal
+   - Color-coded sections (green for strengths, red for weaknesses, yellow for analysis)
+   - Better spacing and readability
+   - Professional, trustworthy appearance
+
+**TypeScript Fixes:**
+- Removed orphaned code blocks (lines 316-410, 462-509, 550-609 in ai-analyzer.ts)
+- Added proper type guards for null/undefined filtering
+- Fixed tacticalAnalysis type definitions for strengths/weaknesses
+- All TypeScript errors eliminated (0 errors)
+
+**UI Safety Improvements:**
+- Comprehensive backward compatibility checks for old predictions
+- Multiple levels of safety checks for tacticalAnalysis object
+- Graceful fallback rendering when data is missing
+- No runtime errors even with incomplete data
+
+**Data is Now Critical & Actionable:**
+- No more generic "strengths" lists
+- Every data point serves a decision-making purpose
+- Injury info directly impacts recommendation
+- Twitter buzz provides social context
+- H2H stats show historical patterns
+- Market odds vs AI confidence identifies value
+
+**Files Modified:**
+- `src/lib/ai-analyzer.ts`
+  - Restructured teamComparison to two-row object format with detailed stats
+  - Redesigned tacticalAnalysis to show strengths and weaknesses per team
+  - Added value assessment logic to marketInsight
+  - Updated AnalysisResult interface for new structure
+  - Fixed TypeScript errors and type guards
+  - Improved mock analysis fallback for old format
+
+- `src/components/predictions/prediction-detail.tsx`
+  - Complete UI redesign for team comparison (now a critical stats table)
+  - Restructured market odds display with value indicators
+  - Rebuilt tactical analysis section (strengths vs weaknesses)
+  - Added comprehensive safety checks for backward compatibility
+  - Improved visual hierarchy with gradients and colors
+  - Optimized layout for faster decision-making
+
+**Performance Impact:**
+- Reduced UI rendering complexity
+- Faster user decision-making
+- Better UX with consolidated information
+- No performance degradation
+
+**Validation:**
+- ✅ All TypeScript errors fixed (0 errors)
+- ✅ All UI components render correctly
+- ✅ Backward compatible with old predictions
+- ✅ No runtime errors in production
+- ✅ Ready for user testing
+
+---
+
 ### [2026-01-12 Part 5] - 📊 SerpAPI Optimization & Best Practices
 
 **Session Summary:**
