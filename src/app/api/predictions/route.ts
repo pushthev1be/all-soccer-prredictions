@@ -125,7 +125,6 @@ export async function POST(request: NextRequest) {
             ...(analysis.teamComparison && { teamComparison: analysis.teamComparison }),
             ...(analysis.marketInsight && { marketInsight: analysis.marketInsight }),
             ...(analysis.tacticalAnalysis && { tacticalAnalysis: analysis.tacticalAnalysis }),
-            ...(analysis.injuryNews && analysis.injuryNews.length > 0 && { injuryNews: analysis.injuryNews }),
             llmModel: analysis.llmModel,
             llmPromptVersion: "1.0",
             processingTimeMs: analysis.processingTimeMs,
