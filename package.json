@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "concurrently -n web,worker -c blue,green \"next start\" \"npm run worker\"",
+    "start": "next start",
     "worker": "tsx src/workers/feedback.worker.ts",
     "dev:worker": "npm run worker",
     "tokens:build": "tsx scripts/tokens/import-tokens.ts",
