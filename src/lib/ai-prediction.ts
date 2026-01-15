@@ -3,11 +3,11 @@ import axios from 'axios';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_BASE_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
 
-// Models to try in order (free first, then paid fallback)
+// Models to try in order (using reliable affordable models)
 const MODELS = [
-  'mistralai/mistral-7b-instruct:free',
-  'meta-llama/llama-3.2-3b-instruct:free',
-  'google/gemma-2-9b-it:free',
+  'meta-llama/llama-3.1-8b-instruct',  // Fast and cheap ($0.05/1M tokens)
+  'google/gemini-flash-1.5',           // Very fast and affordable
+  'anthropic/claude-3-haiku',          // High quality fallback
 ];
 
 export interface PredictionRequest {
