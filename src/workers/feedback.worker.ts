@@ -119,7 +119,13 @@ const worker = new Worker(
           confidenceScore: analysis.confidenceScore,
           ...(analysis.teamComparison && { teamComparison: analysis.teamComparison }),
           ...(analysis.marketInsight && { marketInsight: analysis.marketInsight }),
-          ...(analysis.tacticalAnalysis && { tacticalAnalysis: JSON.stringify(analysis.tacticalAnalysis) as any }),
+          ...(analysis.tacticalAnalysis && { 
+            tacticalAnalysis: typeof analysis.tacticalAnalysis === 'string' 
+              ? [analysis.tacticalAnalysis] 
+              : Array.isArray(analysis.tacticalAnalysis) 
+                ? analysis.tacticalAnalysis 
+                : [JSON.stringify(analysis.tacticalAnalysis)]
+          }),
           llmModel: analysis.llmModel,
           llmPromptVersion: '1.0',
           processingTimeMs: analysis.processingTimeMs,
