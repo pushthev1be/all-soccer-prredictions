@@ -4,8 +4,12 @@ export interface OddsResult {
   homeWin?: number;
   draw?: number;
   awayWin?: number;
+  over?: number;
+  under?: number;
+  btts_yes?: number;
+  btts_no?: number;
   bookmaker?: string;
-  market: '1X2';
+  market: 'h2h' | 'totals' | 'btts' | string;
   lastUpdated?: string;
   source: 'the-odds-api';
 }
@@ -129,44 +133,71 @@ function buildOddsResult(
   event: OddsApiEvent,
   bookmaker: OddsApiBookmaker,
   requestedHome: string,
-  requestedAway: string
+  requestedAway: string,
+  market: string = 'h2h'
 ): OddsResult | null {
-  const h2h = bookmaker.markets.find((m) => m.key === 'h2h');
-  if (!h2h || !h2h.outcomes) return null;
+  // Map market names to The Odds API keys
+  const marketKey = market === '1X2' ? 'h2h' : market === 'over-under' ? 'totals' : market === 'btts' ? 'btts' : market;
+  const marketData = bookmaker.markets.find((m) => m.key === marketKey);
+
+  if (!marketData || !marketData.outcomes) {
+    console.warn(`No ${marketKey} market found for bookmaker ${bookmaker.title}`);
+    return null;
+  }
 
   const homeAligned = teamsMatch(requestedHome, event.home_team) && teamsMatch(requestedAway, event.away_team);
   const awayAligned = teamsMatch(requestedHome, event.away_team) && teamsMatch(requestedAway, event.home_team);
 
   const odds: OddsResult = {
-    market: '1X2',
+    market: marketKey,
     source: 'the-odds-api',
     bookmaker: bookmaker.title || bookmaker.key,
     lastUpdated: bookmaker.last_update,
   };
 
-  h2h.outcomes.forEach((outcome) => {
-    const normalizedOutcome = normalizeTeamName(outcome.name);
-    const homeName = normalizeTeamName(event.home_team);
-    const awayName = normalizeTeamName(event.away_team);
+  // Parse outcomes based on market type
+  if (marketKey === 'h2h') {
+    marketData.outcomes.forEach((outcome) => {
+      const normalizedOutcome = normalizeTeamName(outcome.name);
+      const homeName = normalizeTeamName(event.home_team);
+      const awayName = normalizeTeamName(event.away_team);
 
-    if (normalizedOutcome === 'draw') {
-      odds.draw = outcome.price;
-      return;
-    }
+      if (normalizedOutcome === 'draw') {
+        odds.draw = outcome.price;
+        return;
+      }
 
-    if (normalizedOutcome === homeName) {
-      if (homeAligned) odds.homeWin = outcome.price;
-      if (awayAligned) odds.awayWin = outcome.price;
-      return;
-    }
+      if (normalizedOutcome === homeName) {
+        if (homeAligned) odds.homeWin = outcome.price;
+        if (awayAligned) odds.awayWin = outcome.price;
+        return;
+      }
 
-    if (normalizedOutcome === awayName) {
-      if (homeAligned) odds.awayWin = outcome.price;
-      if (awayAligned) odds.homeWin = outcome.price;
-    }
-  });
+      if (normalizedOutcome === awayName) {
+        if (homeAligned) odds.awayWin = outcome.price;
+        if (awayAligned) odds.homeWin = outcome.price;
+      }
+    });
 
-  if (!odds.homeWin && !odds.awayWin && !odds.draw) return null;
+    if (!odds.homeWin && !odds.awayWin && !odds.draw) return null;
+  } else if (marketKey === 'totals') {
+    const overOutcome = marketData.outcomes.find((o) => o.name === 'Over');
+    const underOutcome = marketData.outcomes.find((o) => o.name === 'Under');
+
+    if (overOutcome) odds.over = overOutcome.price;
+    if (underOutcome) odds.under = underOutcome.price;
+
+    if (!odds.over && !odds.under) return null;
+  } else if (marketKey === 'btts') {
+    const yesOutcome = marketData.outcomes.find((o) => o.name === 'Yes');
+    const noOutcome = marketData.outcomes.find((o) => o.name === 'No');
+
+    if (yesOutcome) odds.btts_yes = yesOutcome.price;
+    if (noOutcome) odds.btts_no = noOutcome.price;
+
+    if (!odds.btts_yes && !odds.btts_no) return null;
+  }
+
   return odds;
 }
 
@@ -176,8 +207,10 @@ export async function fetchLiveOdds(params: {
   competitionId?: string;
   kickoffTime?: Date | string;
   regions?: string[];
+  market?: 'h2h' | 'totals' | 'btts' | string;
+  bookmakers?: string[];
 }): Promise<OddsResult | null> {
-  const { homeTeam, awayTeam, competitionId, regions } = params;
+  const { homeTeam, awayTeam, competitionId, regions, market = 'h2h', bookmakers } = params;
 
   if (!API_KEY) {
     console.warn('⚠️ THE_ODDS_API_KEY not set - skipping live odds fetch');
@@ -189,21 +222,24 @@ export async function fetchLiveOdds(params: {
   }
 
   const sportKey = selectSportKey(competitionId);
-  const cacheKey = `${sportKey}:${normalizeTeamName(homeTeam)}:${normalizeTeamName(awayTeam)}`;
+  const cacheKey = `${sportKey}:${normalizeTeamName(homeTeam)}:${normalizeTeamName(awayTeam)}:${market}:${bookmakers?.join(',') || 'any'}`;
   const cached = oddsCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;
   }
 
   try {
+    const queryParams = {
+      apiKey: API_KEY,
+      regions: (regions && regions.length > 0 ? regions : DEFAULT_REGIONS).join(','),
+      markets: market,
+      oddsFormat: 'decimal',
+      dateFormat: 'iso',
+      ...(bookmakers && bookmakers.length > 0 && { bookmakers: bookmakers.join(',') }),
+    };
+
     const response = await axios.get<OddsApiEvent[]>(`${BASE_URL}/sports/${sportKey}/odds`, {
-      params: {
-        apiKey: API_KEY,
-        regions: (regions && regions.length > 0 ? regions : DEFAULT_REGIONS).join(','),
-        markets: DEFAULT_MARKETS.join(','),
-        oddsFormat: 'decimal',
-        dateFormat: 'iso',
-      },
+      params: queryParams,
       timeout: 8000,
     });
 
@@ -220,7 +256,7 @@ export async function fetchLiveOdds(params: {
     });
 
     if (!matchingEvent) {
-      console.warn(`No matching odds event found for ${homeTeam} vs ${awayTeam} (${sportKey})`);
+      console.warn(`No matching odds event found for ${homeTeam} vs ${awayTeam} (${sportKey}, market: ${market})`);
       return null;
     }
 
@@ -230,7 +266,7 @@ export async function fetchLiveOdds(params: {
       return null;
     }
 
-    const odds = buildOddsResult(matchingEvent, bookmaker, homeTeam, awayTeam);
+    const odds = buildOddsResult(matchingEvent, bookmaker, homeTeam, awayTeam, market);
     if (!odds) return null;
 
     oddsCache.set(cacheKey, {

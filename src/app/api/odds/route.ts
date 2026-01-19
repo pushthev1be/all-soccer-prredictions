@@ -6,6 +6,8 @@ export async function GET(request: NextRequest) {
   const homeTeam = searchParams.get('homeTeam');
   const awayTeam = searchParams.get('awayTeam');
   const competitionId = searchParams.get('competitionId') ?? undefined;
+  const market = searchParams.get('market') ?? 'h2h';
+  const bookmakers = searchParams.get('bookmakers')?.split(',') ?? undefined;
 
   if (!homeTeam || !awayTeam) {
     return NextResponse.json(
@@ -19,6 +21,8 @@ export async function GET(request: NextRequest) {
     awayTeam,
     competitionId,
     kickoffTime: searchParams.get('kickoff') || undefined,
+    market,
+    bookmakers,
   });
 
   if (!odds) {

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { competitions, competitionMap } from "@/lib/competitions";
 import { marketOptions, marketLabels } from "@/lib/prediction-constants";
 import { LEAGUE_CODES, FootballFixture, LeagueSlug } from "@/lib/football-data";
+import type { OddsResult } from "@/lib/odds-api";
 
 interface SlipItem {
   id: string;
@@ -33,7 +34,7 @@ export default function CreatePredictionPage() {
   const [fixturesLoading, setFixturesLoading] = useState(false);
   const [slipItems, setSlipItems] = useState<SlipItem[]>([]);
   const [multiSlipMode, setMultiSlipMode] = useState(false);
-  const [liveOdds, setLiveOdds] = useState<{ homeWin?: number; draw?: number; awayWin?: number; bookmaker?: string; lastUpdated?: string } | null>(null);
+  const [liveOdds, setLiveOdds] = useState<OddsResult | null>(null);
   const [oddsLoading, setOddsLoading] = useState(false);
   const [oddsError, setOddsError] = useState("");
   const [oddsNotice, setOddsNotice] = useState("");
@@ -43,6 +44,8 @@ export default function CreatePredictionPage() {
 
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(defaultCompetitionId);
   const [selectedLeague, setSelectedLeague] = useState<LeagueSlug>("premier-league");
+  const [selectedMarket, setSelectedMarket] = useState<keyof typeof marketOptions>("1X2");
+  const [selectedBookmakers, setSelectedBookmakers] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     competition: defaultCompetitionName,
     homeTeam: "",
@@ -67,12 +70,29 @@ export default function CreatePredictionPage() {
 
   const pickOddsForSelection = (
     pick: string,
-    odds?: { homeWin?: number; draw?: number; awayWin?: number }
+    odds?: any
   ): number | null => {
     if (!odds) return null;
-    if (pick === "home") return odds.homeWin ?? null;
-    if (pick === "draw") return odds.draw ?? null;
-    if (pick === "away") return odds.awayWin ?? null;
+    
+    // For h2h (1X2) market
+    if (selectedMarket === "1X2") {
+      if (pick === "home") return odds.homeWin ?? null;
+      if (pick === "draw") return odds.draw ?? null;
+      if (pick === "away") return odds.awayWin ?? null;
+    }
+    
+    // For totals (over/under) market
+    if (selectedMarket === "over-under") {
+      if (pick === "over") return odds.over ?? null;
+      if (pick === "under") return odds.under ?? null;
+    }
+    
+    // For btts market
+    if (selectedMarket === "btts") {
+      if (pick === "yes") return odds.btts_yes ?? null;
+      if (pick === "no") return odds.btts_no ?? null;
+    }
+    
     return null;
   };
 
@@ -81,9 +101,17 @@ export default function CreatePredictionPage() {
     pickValue?: string
   ) => {
     if (!incomingOdds) return;
-    const oddsForPick =
-      pickOddsForSelection(pickValue || formData.pick, incomingOdds) ||
-      pickOddsForSelection("home", incomingOdds);
+    
+    // Get the first valid pick for the market if no pick selected
+    let defaultPick = pickValue || formData.pick;
+    if (!defaultPick && formData.market) {
+      const options = marketOptions[formData.market as keyof typeof marketOptions];
+      if (options && options.length > 0) {
+        defaultPick = (options[0] as any)?.value || options[0];
+      }
+    }
+    
+    const oddsForPick = pickOddsForSelection(defaultPick, incomingOdds);
 
     setFormData((prev) => ({
       ...prev,
@@ -113,6 +141,15 @@ export default function CreatePredictionPage() {
 
       if (selectedCompetitionId) {
         params.append("competitionId", selectedCompetitionId);
+      }
+
+      if (selectedMarket) {
+        const marketKey = selectedMarket === "1X2" ? "h2h" : selectedMarket === "over-under" ? "totals" : selectedMarket === "btts" ? "btts" : selectedMarket;
+        params.append("market", marketKey);
+      }
+
+      if (selectedBookmakers.length > 0) {
+        params.append("bookmakers", selectedBookmakers.join(","));
       }
 
       if (formData.kickoffTime) {
@@ -207,6 +244,8 @@ export default function CreatePredictionPage() {
         draw: fixture.odds.draw,
         awayWin: fixture.odds.awayWin,
         bookmaker: "Football-Data",
+        market: "h2h",
+        source: "the-odds-api",
         lastUpdated: fixture.kickoff,
       });
       setOddsNotice("Using fixture odds");
@@ -563,10 +602,16 @@ export default function CreatePredictionPage() {
 
                 <select
                   value={formData.market}
-                  onChange={(e) => setFormData({ ...formData, market: e.target.value as keyof typeof marketOptions })}
+                  onChange={(e) => {
+                    const newMarket = e.target.value as keyof typeof marketOptions;
+                    setFormData({ ...formData, market: newMarket, pick: "" });
+                    setSelectedMarket(newMarket);
+                    // Refetch odds for new market
+                    if (formData.homeTeam && formData.awayTeam) {
+                      setTimeout(() => fetchLiveOddsForMatch(), 100);
+                    }
+                  }}
                   className="col-span-2 sm:col-span-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-gray-300 focus:outline-none"
-                  disabled={formData.market !== "1X2"}
-                  title={formData.market !== "1X2" ? "Only 1X2 market supported for live odds" : ""}
                 >
                   {Object.entries(marketOptions).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -574,6 +619,33 @@ export default function CreatePredictionPage() {
                     </option>
                   ))}
                 </select>
+
+                <div className="col-span-2 sm:col-span-1 space-y-1">
+                  <label className="text-xs font-semibold text-gray-700">Bookmakers (Optional)</label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-32 overflow-y-auto space-y-1">
+                    {["pinnacle", "bet365", "betfair", "draftkings", "fanduel", "caesars", "williamhill", "unibet_eu"].map((bm) => (
+                      <label key={bm} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBookmakers.includes(bm)}
+                          onChange={(e) => {
+                            const updated = e.target.checked
+                              ? [...selectedBookmakers, bm]
+                              : selectedBookmakers.filter(b => b !== bm);
+                            setSelectedBookmakers(updated);
+                            // Refetch odds with new bookmaker selection
+                            if (formData.homeTeam && formData.awayTeam) {
+                              setTimeout(() => fetchLiveOddsForMatch(), 100);
+                            }
+                          }}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-700 capitalize">{bm.replace("_", " ")}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">Leave empty for best available odds</p>
+                </div>
 
                 <select
                   value={formData.pick}
@@ -606,11 +678,27 @@ export default function CreatePredictionPage() {
                   {!oddsLoading && oddsError && (
                     <p className="text-xs text-orange-600 italic">{oddsError}</p>
                   )}
-                  {liveOdds && liveOdds.homeWin && liveOdds.draw && liveOdds.awayWin && (
-                    <div className="text-xs text-gray-600 flex gap-2">
-                      <span>H: {liveOdds.homeWin.toFixed(2)}</span>
-                      <span>D: {liveOdds.draw.toFixed(2)}</span>
-                      <span>A: {liveOdds.awayWin.toFixed(2)}</span>
+                  {liveOdds && (
+                    <div className="text-xs text-gray-600 flex gap-2 flex-wrap">
+                      {formData.market === "1X2" && liveOdds.homeWin && liveOdds.draw && liveOdds.awayWin && (
+                        <>
+                          <span>H: {liveOdds.homeWin.toFixed(2)}</span>
+                          <span>D: {liveOdds.draw.toFixed(2)}</span>
+                          <span>A: {liveOdds.awayWin.toFixed(2)}</span>
+                        </>
+                      )}
+                      {formData.market === "over-under" && liveOdds.over && liveOdds.under && (
+                        <>
+                          <span>Over: {liveOdds.over.toFixed(2)}</span>
+                          <span>Under: {liveOdds.under.toFixed(2)}</span>
+                        </>
+                      )}
+                      {formData.market === "btts" && liveOdds.btts_yes && liveOdds.btts_no && (
+                        <>
+                          <span>Yes: {liveOdds.btts_yes.toFixed(2)}</span>
+                          <span>No: {liveOdds.btts_no.toFixed(2)}</span>
+                        </>
+                      )}
                       {liveOdds.bookmaker && (
                         <span className="text-gray-500">({liveOdds.bookmaker})</span>
                       )}
