@@ -33,6 +33,10 @@ export default function CreatePredictionPage() {
   const [fixturesLoading, setFixturesLoading] = useState(false);
   const [slipItems, setSlipItems] = useState<SlipItem[]>([]);
   const [multiSlipMode, setMultiSlipMode] = useState(false);
+  const [liveOdds, setLiveOdds] = useState<{ homeWin?: number; draw?: number; awayWin?: number; bookmaker?: string; lastUpdated?: string } | null>(null);
+  const [oddsLoading, setOddsLoading] = useState(false);
+  const [oddsError, setOddsError] = useState("");
+  const [oddsNotice, setOddsNotice] = useState("");
 
   const defaultCompetitionId = "premier-league";
   const defaultCompetitionName = competitionMap[defaultCompetitionId]?.name || competitions[0]?.name || "";
@@ -61,6 +65,78 @@ export default function CreatePredictionPage() {
     ? slipItems.reduce((acc, item) => acc * item.odds, 1).toFixed(2)
     : "0.00";
 
+  const pickOddsForSelection = (
+    pick: string,
+    odds?: { homeWin?: number; draw?: number; awayWin?: number }
+  ): number | null => {
+    if (!odds) return null;
+    if (pick === "home") return odds.homeWin ?? null;
+    if (pick === "draw") return odds.draw ?? null;
+    if (pick === "away") return odds.awayWin ?? null;
+    return null;
+  };
+
+  const applyLiveOddsToForm = (
+    incomingOdds: typeof liveOdds,
+    pickValue?: string
+  ) => {
+    if (!incomingOdds) return;
+    const oddsForPick =
+      pickOddsForSelection(pickValue || formData.pick, incomingOdds) ||
+      pickOddsForSelection("home", incomingOdds);
+
+    setFormData((prev) => ({
+      ...prev,
+      odds: oddsForPick ? oddsForPick.toString() : prev.odds,
+      bookmaker: incomingOdds.bookmaker || prev.bookmaker,
+    }));
+  };
+
+  const fetchLiveOddsForMatch = async (homeOverride?: string, awayOverride?: string) => {
+    const homeTeam = homeOverride || formData.homeTeam;
+    const awayTeam = awayOverride || formData.awayTeam;
+
+    if (!homeTeam || !awayTeam) {
+      setOddsError("Select both teams to load live odds");
+      return;
+    }
+
+    setOddsLoading(true);
+    setOddsError("");
+    setOddsNotice("");
+
+    try {
+      const params = new URLSearchParams({
+        homeTeam,
+        awayTeam,
+      });
+
+      if (selectedCompetitionId) {
+        params.append("competitionId", selectedCompetitionId);
+      }
+
+      if (formData.kickoffTime) {
+        params.append("kickoff", new Date(formData.kickoffTime).toISOString());
+      }
+
+      const response = await fetch(`/api/odds?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || "Failed to fetch live odds");
+      }
+
+      setLiveOdds(data.odds || null);
+      applyLiveOddsToForm(data.odds || null);
+      setOddsNotice(data?.odds?.bookmaker ? `Live odds from ${data.odds.bookmaker}` : "Live odds loaded");
+    } catch (err) {
+      setLiveOdds(null);
+      setOddsError(err instanceof Error ? err.message : "Unable to fetch live odds right now");
+    } finally {
+      setOddsLoading(false);
+    }
+  };
+
   // Fetch real fixtures from Football Data API
   useEffect(() => {
     async function loadFixtures() {
@@ -83,6 +159,21 @@ export default function CreatePredictionPage() {
 
     loadFixtures();
   }, [selectedLeague]);
+
+  useEffect(() => {
+    if (!liveOdds) return;
+    const oddsForPick = pickOddsForSelection(formData.pick, liveOdds);
+    if (!oddsForPick) return;
+    const oddsString = oddsForPick.toString();
+
+    if (formData.odds !== oddsString) {
+      setFormData((prev) => ({
+        ...prev,
+        odds: oddsString,
+        bookmaker: liveOdds.bookmaker || prev.bookmaker,
+      }));
+    }
+  }, [formData.odds, formData.pick, liveOdds]);
 
   if (status === "loading") {
     return (
@@ -109,6 +200,23 @@ export default function CreatePredictionPage() {
       kickoffTime: fixture.kickoff ? new Date(fixture.kickoff).toISOString().slice(0, 16) : "",
       odds: fixture.odds?.homeWin ? fixture.odds.homeWin.toString() : "",
     }));
+
+    if (fixture.odds) {
+      setLiveOdds({
+        homeWin: fixture.odds.homeWin,
+        draw: fixture.odds.draw,
+        awayWin: fixture.odds.awayWin,
+        bookmaker: "Football-Data",
+        lastUpdated: fixture.kickoff,
+      });
+      setOddsNotice("Using fixture odds");
+    } else {
+      setLiveOdds(null);
+      setOddsNotice("");
+    }
+
+    setOddsError("");
+    fetchLiveOddsForMatch(fixture.homeTeam, fixture.awayTeam);
   };
 
   const handleAddToSlip = () => {
@@ -154,6 +262,9 @@ export default function CreatePredictionPage() {
       bookmaker: "",
       reasoning: "",
     });
+    setLiveOdds(null);
+    setOddsNotice("");
+    setOddsError("");
     setSuccess("✅ Added to slip!");
     setTimeout(() => setSuccess(""), 2000);
   };
@@ -415,6 +526,11 @@ export default function CreatePredictionPage() {
                   placeholder="Home Team"
                   value={formData.homeTeam}
                   onChange={(e) => setFormData({ ...formData, homeTeam: e.target.value })}
+                  onBlur={() => {
+                    if (formData.homeTeam && formData.awayTeam) {
+                      fetchLiveOddsForMatch();
+                    }
+                  }}
                   className="col-span-2 sm:col-span-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:border-gray-300 focus:outline-none"
                 />
                 <input
@@ -422,6 +538,11 @@ export default function CreatePredictionPage() {
                   placeholder="Away Team"
                   value={formData.awayTeam}
                   onChange={(e) => setFormData({ ...formData, awayTeam: e.target.value })}
+                  onBlur={() => {
+                    if (formData.homeTeam && formData.awayTeam) {
+                      fetchLiveOddsForMatch();
+                    }
+                  }}
                   className="col-span-2 sm:col-span-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:border-gray-300 focus:outline-none"
                 />
 
@@ -444,6 +565,8 @@ export default function CreatePredictionPage() {
                   value={formData.market}
                   onChange={(e) => setFormData({ ...formData, market: e.target.value as keyof typeof marketOptions })}
                   className="col-span-2 sm:col-span-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-gray-300 focus:outline-none"
+                  disabled={formData.market !== "1X2"}
+                  title={formData.market !== "1X2" ? "Only 1X2 market supported for live odds" : ""}
                 >
                   {Object.entries(marketOptions).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -465,14 +588,35 @@ export default function CreatePredictionPage() {
                   ))}
                 </select>
 
-                <input
-                  type="number"
-                  placeholder="Odds"
-                  step="0.01"
-                  value={formData.odds}
-                  onChange={(e) => setFormData({ ...formData, odds: e.target.value })}
-                  className="col-span-2 sm:col-span-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:border-gray-300 focus:outline-none"
-                />
+                <div className="col-span-2 sm:col-span-1 space-y-1">
+                  <input
+                    type="number"
+                    placeholder="Odds"
+                    step="0.01"
+                    value={formData.odds}
+                    onChange={(e) => setFormData({ ...formData, odds: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:border-gray-300 focus:outline-none"
+                  />
+                  {oddsLoading && (
+                    <p className="text-xs text-gray-500 italic">Loading live odds...</p>
+                  )}
+                  {!oddsLoading && oddsNotice && (
+                    <p className="text-xs text-green-600 italic">✓ {oddsNotice}</p>
+                  )}
+                  {!oddsLoading && oddsError && (
+                    <p className="text-xs text-orange-600 italic">{oddsError}</p>
+                  )}
+                  {liveOdds && liveOdds.homeWin && liveOdds.draw && liveOdds.awayWin && (
+                    <div className="text-xs text-gray-600 flex gap-2">
+                      <span>H: {liveOdds.homeWin.toFixed(2)}</span>
+                      <span>D: {liveOdds.draw.toFixed(2)}</span>
+                      <span>A: {liveOdds.awayWin.toFixed(2)}</span>
+                      {liveOdds.bookmaker && (
+                        <span className="text-gray-500">({liveOdds.bookmaker})</span>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {!multiSlipMode && (
                   <input

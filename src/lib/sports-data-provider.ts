@@ -1,4 +1,5 @@
 import { realFootballData, RealTeamStats, RealMatchData } from './api/real-football-data';
+import { fetchLiveOdds } from './odds-api';
 
 export interface TeamFormData {
   wins: number;
@@ -292,17 +293,30 @@ export class SportsDataProvider {
   /**
    * Get realistic market odds (calculated from team strength)
    */
-  async getRealMatchOdds(homeTeam: string, awayTeam: string): Promise<any> {
+  async getRealMatchOdds(homeTeam: string, awayTeam: string, competitionId?: string): Promise<OddsData> {
+    const liveOdds = await fetchLiveOdds({ homeTeam, awayTeam, competitionId });
+
+    if (liveOdds && (liveOdds.homeWin || liveOdds.draw || liveOdds.awayWin)) {
+      return {
+        homeWin: liveOdds.homeWin ?? 0,
+        draw: liveOdds.draw ?? 0,
+        awayWin: liveOdds.awayWin ?? 0,
+        bookmaker: liveOdds.bookmaker || 'The Odds API',
+        market: liveOdds.market,
+        lastUpdated: liveOdds.lastUpdated || new Date().toISOString(),
+      };
+    }
+
     const homeStats = await this.getRealTeamStats(homeTeam);
     const awayStats = await this.getRealTeamStats(awayTeam);
 
     const homeStrength = 20 - (homeStats.leaguePosition || 10);
     const awayStrength = 20 - (awayStats.leaguePosition || 10);
-    const total = homeStrength + awayStrength;
+    const total = homeStrength + awayStrength || 1;
 
-    const homeWinProb = (homeStrength / total) * 0.7 + 0.15;
-    const awayWinProb = (awayStrength / total) * 0.7;
-    const drawProb = 1 - homeWinProb - awayWinProb;
+    const homeWinProb = Math.max((homeStrength / total) * 0.7 + 0.15, 0.05);
+    const awayWinProb = Math.max((awayStrength / total) * 0.7, 0.05);
+    const drawProb = Math.max(1 - homeWinProb - awayWinProb, 0.05);
 
     return {
       homeWin: parseFloat((1 / homeWinProb).toFixed(2)),
@@ -333,7 +347,7 @@ export class SportsDataProvider {
       this.getRealHeadToHead(homeTeam, awayTeam),
       this.getRealFormAnalysis(homeTeam),
       this.getRealFormAnalysis(awayTeam),
-      this.getRealMatchOdds(homeTeam, awayTeam),
+      this.getRealMatchOdds(homeTeam, awayTeam, canonicalCompetitionId),
     ]);
 
     return {
