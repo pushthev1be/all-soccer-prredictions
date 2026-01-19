@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { SAMPLE_FIXTURES } from "@/lib/fixtures-sample";
-import { getQuickOdds } from "@/lib/odds-api";
+import { fetchLiveOdds } from "@/lib/odds-api";
 import { addPredictionJob } from "@/lib/queue";
 
 const prisma = new PrismaClient();
@@ -41,7 +41,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Fixture not found" }, { status: 404 });
   }
 
-  const odds = await getQuickOdds(market, pick);
+  // Try to fetch live odds, fallback to default odds
+  const liveOdds = await fetchLiveOdds({
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    competitionId: fixture.canonicalCompetitionId,
+    kickoffTime: fixture.kickoffTimeUTC,
+  });
+
+  // Determine odds value based on pick and live odds availability
+  let oddsValue = 2.0; // default fallback
+  let bookmaker = "Default";
+
+  if (liveOdds) {
+    bookmaker = liveOdds.bookmaker || "The Odds API";
+    if (pick === "home" && liveOdds.homeWin) {
+      oddsValue = liveOdds.homeWin;
+    } else if (pick === "draw" && liveOdds.draw) {
+      oddsValue = liveOdds.draw;
+    } else if (pick === "away" && liveOdds.awayWin) {
+      oddsValue = liveOdds.awayWin;
+    }
+  }
 
   try {
     const prediction = await prisma.prediction.create({
@@ -55,9 +76,9 @@ export async function POST(request: NextRequest) {
         kickoffTimeUTC: new Date(fixture.kickoffTimeUTC),
         market,
         pick,
-        odds: odds.odds,
+        odds: oddsValue,
         stake: stake ?? null,
-        bookmaker: odds.source,
+        bookmaker: bookmaker,
         reasoning: reasoning || `Quick prediction for ${fixture.homeTeam} vs ${fixture.awayTeam}`,
       },
       include: {
@@ -87,7 +108,11 @@ export async function POST(request: NextRequest) {
         status: prediction.status,
         jobId,
       },
-      odds,
+      odds: {
+        value: oddsValue,
+        bookmaker: bookmaker,
+        live: !!liveOdds,
+      },
     });
   } catch (err) {
     console.error("Quick prediction error", err);
