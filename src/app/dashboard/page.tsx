@@ -12,8 +12,52 @@ export default async function DashboardPage() {
     redirect("/api/auth/signin");
   }
 
+  const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
+
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-white relative overflow-hidden flex">
+      {/* Admin Sidebar */}
+      {isAdmin && (
+        <div className="hidden lg:block w-64 bg-gray-900 text-white p-6 relative z-20">
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-2">Admin Panel</h2>
+            <p className="text-gray-400 text-sm">{session.user?.email}</p>
+          </div>
+          
+          <nav className="space-y-2">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white font-medium"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Dashboard
+            </Link>
+            
+            <Link
+              href="/admin/stats"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              User Statistics
+            </Link>
+            
+            <Link
+              href="/admin/queue"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+              Queue Status
+            </Link>
+          </nav>
+        </div>
+      )}
+
       {/* Subtle background pattern */}
       <div className="absolute inset-0 z-0">
         <div 
@@ -25,7 +69,7 @@ export default async function DashboardPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-green-50/50" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+      <div className="flex-1 max-w-7xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center gap-3 sm:gap-4">
