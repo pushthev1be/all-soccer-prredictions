@@ -12,13 +12,24 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-8 border-b border-gray-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)] rounded-b-3xl">
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 z-0">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.03]"
+          style={{
+            backgroundImage: "url('/images/backgrounds/football-pattern.jpg')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-green-50/50" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
           <div>
-            <h1 className="text-4xl font-bold text-black mb-2 tracking-tight drop-shadow-sm">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight">Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
           </div>
           <form action="/api/auth/signout" method="POST">
             <button 
@@ -31,52 +42,65 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <Link
             href="/predictions/create"
-            className="group p-8 rounded-xl bg-black text-white border border-black shadow-sm hover:shadow-lg hover:bg-gray-900 transition-all duration-300 transform hover:scale-105"
+            className="group p-4 sm:p-8 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white border-2 border-blue-500/50 shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
           >
-            <div className="text-3xl font-bold mb-2">+</div>
-            <h3 className="text-xl font-semibold mb-1">Create Prediction</h3>
-            <p className="text-gray-300 text-sm">Submit a new prediction for AI analysis</p>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <div className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">+</div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">Create Prediction</h3>
+              <p className="text-blue-100 text-xs sm:text-sm">Submit a new prediction for AI analysis</p>
+            </div>
           </Link>
 
           <Link
             href="/predictions"
-            className="group p-8 rounded-xl bg-gray-100 text-black border border-black/10 shadow-sm hover:shadow-lg hover:bg-gray-200 transition-all duration-300 transform hover:scale-105"
+            className="group p-4 sm:p-8 rounded-2xl bg-white text-black border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
           >
-            <BarChart3 className="h-8 w-8 mb-4 opacity-80" />
-            <h3 className="text-xl font-semibold mb-1">My Predictions</h3>
-            <p className="text-gray-600 text-sm">View history and AI feedback</p>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <BarChart3 className="h-8 sm:h-10 w-8 sm:w-10 mb-3 sm:mb-4 text-blue-600" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">My Predictions</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">View history and AI feedback</p>
+            </div>
           </Link>
 
-          <div className="p-8 rounded-xl bg-white border-2 border-black/10 shadow-sm hover:border-black transition-all duration-300">
-            <div className="h-8 w-8 mb-4 bg-gray-300 rounded-lg" />
-            <h3 className="text-xl font-semibold mb-1 text-black">Profile</h3>
-            <p className="text-gray-600 text-sm">{session.user?.email}</p>
+          <div className="p-4 sm:p-8 rounded-2xl bg-white border-2 border-gray-200 shadow-lg hover:border-green-300 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <div className="h-8 sm:h-10 w-8 sm:w-10 mb-3 sm:mb-4 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                <svg className="w-5 sm:w-6 h-5 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 text-black">Profile</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">{session.user?.email}</p>
+            </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-black mb-6 tracking-tight drop-shadow-sm">Your Statistics</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-black mb-4 sm:mb-6 tracking-tight">Your Statistics</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
               { label: "Total Predictions", value: "0" },
               { label: "Completed", value: "0" },
               { label: "Pending", value: "0" },
               { label: "Win Rate", value: "--" },
             ].map((stat, i) => (
-              <div key={i} className="p-6 rounded-xl bg-gray-100 text-black border border-black/10 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <p className="text-gray-600 text-sm font-medium mb-2">{stat.label}</p>
-                <p className="text-4xl font-bold">{stat.value}</p>
+              <div key={i} className="p-4 sm:p-6 rounded-xl bg-white text-black border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <p className="text-gray-600 text-xs sm:text-sm font-medium mb-2">{stat.label}</p>
+                <p className="text-3xl sm:text-4xl font-bold">{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gray-50 rounded-xl border border-black/10 p-8 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-md">
           <h2 className="text-2xl font-bold text-black mb-6 tracking-tight drop-shadow-sm">Recent Activity</h2>
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-300 mb-4">
