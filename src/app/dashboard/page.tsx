@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { BarChart3, Zap } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -27,9 +28,12 @@ export default async function DashboardPage() {
       <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight">Dashboard</h1>
-            <p className="text-sm sm:text-base text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <UserAvatar user={session.user} size="lg" />
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight">Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
+            </div>
           </div>
           <form action="/api/auth/signout" method="POST">
             <button 
@@ -70,10 +74,8 @@ export default async function DashboardPage() {
           <div className="p-4 sm:p-8 rounded-2xl bg-white border-2 border-gray-200 shadow-lg hover:border-green-300 transition-all duration-300 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10">
-              <div className="h-8 sm:h-10 w-8 sm:w-10 mb-3 sm:mb-4 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                <svg className="w-5 sm:w-6 h-5 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              <div className="mb-3 sm:mb-4">
+                <UserAvatar user={session.user} size="md" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 text-black">Profile</h3>
               <p className="text-gray-600 text-xs sm:text-sm">{session.user?.email}</p>

@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
         hostname: "media-3.api-sports.io",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
     ],
   },
 };
