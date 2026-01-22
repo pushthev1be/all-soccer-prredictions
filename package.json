@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && npm run optimize && next build",
     "start": "next start",
     "worker": "tsx src/workers/feedback.worker.ts",
     "dev:worker": "npm run worker",
@@ -19,7 +19,10 @@
     "queue:stats": "tsx scripts/queue/stats.ts",
     "db:seed-dev": "tsx scripts/seed-dev-data.ts",
     "dev:reset": "npm run dev:db && npm run db:seed-dev && npm run dev",
-    "verify:real-data": "tsx scripts/verify-real-data.ts"
+    "verify:real-data": "tsx scripts/verify-real-data.ts",
+    "perf:analyze": "tsx scripts/performance/analyze.ts",
+    "perf:optimize": "tsx scripts/performance/optimize.ts",
+    "perf:check": "npm run perf:analyze && npm run perf:optimize"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

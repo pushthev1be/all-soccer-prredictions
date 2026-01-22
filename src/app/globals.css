@@ -1,3 +1,8 @@
+@import "../styles/reset.css";
+@import "../styles/tokens.css";
+@import "../styles/utilities.css";
+@import "../styles/mobile.css";
+@import "../styles/components.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 
