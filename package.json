@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && npm run optimize && next build",
+    "build": "prisma generate && npm run perf:optimize && next build",
     "start": "next start",
     "worker": "tsx src/workers/feedback.worker.ts",
     "dev:worker": "npm run worker",
