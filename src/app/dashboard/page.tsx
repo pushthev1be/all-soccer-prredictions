@@ -65,7 +65,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3 sm:gap-4">
             <UserAvatar user={session.user} size="lg" />
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>Dashboard</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight drop-shadow-lg\">Dashboard</h1>
               <p className="text-sm sm:text-base text-white/90">Welcome back, <span className="font-semibold text-white">{session.user?.name || session.user?.email}</span></p>
             </div>
           </div>

@@ -13,11 +13,11 @@ export default function Home() {
               <span className="text-sm font-semibold text-gray-900">AI-Powered Analysis</span>
             </div>
             
-            <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+            <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
               Soccer Prediction Intelligence
             </h1>
             
-            <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto leading-relaxed" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+            <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto leading-relaxed">
               Get AI-powered feedback on your soccer predictions. Analyze odds, market trends, and team form in seconds.
             </p>
             
@@ -43,8 +43,8 @@ export default function Home() {
       {/* Features Section */}
       <div id="features" className="container-fluid py-20 space-y-12">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-lg" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>Powerful Features</h2>
-          <p className="text-white/90 text-lg" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.4)' }}>Everything you need for smarter predictions</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-lg">Powerful Features</h2>
+          <p className="text-white/90 text-lg">Everything you need for smarter predictions</p>
         </div>
         
         <div className="grid md:grid-cols-3 gap-6">
