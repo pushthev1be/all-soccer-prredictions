@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { BarChart3, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { BackgroundManager } from "@/components/ui/background-manager";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -16,9 +15,7 @@ export default async function DashboardPage() {
   const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden flex">
-      <BackgroundManager />
-      {/* Admin Sidebar */}
+    <div className="min-h-screen bg-white relative overflow-hidden flex">      {/* Admin Sidebar */}
       {isAdmin && (
         <div className="hidden lg:block w-64 bg-gray-900 text-white p-6 relative z-20">
           <div className="mb-8">

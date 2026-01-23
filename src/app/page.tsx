@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, Zap, BarChart3, Brain } from "lucide-react";
-import { BackgroundManager } from "@/components/ui/background-manager";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
-      <BackgroundManager />
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl">
         <div className="relative container-fluid py-20 sm:py-28">
