@@ -69,9 +69,9 @@ export default async function DashboardPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-green-50/50" />
       </div>
 
-      <div className="flex-1 max-w-7xl mx-auto px-6 py-8 relative z-10">
+      <div className="flex-1 container-fluid section-spacing relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-gray-200">
           <div className="flex items-center gap-3 sm:gap-4">
             <UserAvatar user={session.user} size="lg" />
             <div>

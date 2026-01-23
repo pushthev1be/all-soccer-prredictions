@@ -44,7 +44,7 @@ export default function SignUp() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-green-600/10" />
       </div>
 
-      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md border border-gray-200 relative z-10">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md border-2 border-gray-200 relative z-10">
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-12 sm:w-16 h-12 sm:h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full mb-3 sm:mb-4 shadow-lg">
             <svg className="w-6 sm:w-8 h-6 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,14 +56,14 @@ export default function SignUp() {
         </div>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+          <div className="mb-4 p-3 bg-red-50 border-2 border-red-300 rounded-md text-red-600 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
               Email Address
             </label>
             <input
@@ -74,7 +74,7 @@ export default function SignUp() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-gray-400 transition-all duration-200 text-gray-900 placeholder-gray-400"
               placeholder="your@email.com"
             />
           </div>

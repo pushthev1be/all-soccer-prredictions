@@ -26,8 +26,8 @@ export default async function PredictionsPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-green-600/5" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 relative z-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-8 bg-white p-3 sm:p-6 rounded-lg sm:rounded-2xl shadow-lg border border-gray-100">
+      <div className="container-fluid section-spacing relative z-10">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-8 bg-white p-3 sm:p-6 rounded-lg sm:rounded-2xl shadow-lg border-2 border-gray-200">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-black mb-1 sm:mb-2 tracking-tight">My Predictions</h1>
             <p className="text-xs sm:text-base text-gray-600">View all your submitted predictions and AI feedback</p>

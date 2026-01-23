@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl">
-        <div className="relative max-w-6xl mx-auto px-6 py-20 sm:py-28">
+        <div className="relative container-fluid py-20 sm:py-28">
           <div className="text-center space-y-8">
             <div className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border-2 border-blue-200 shadow-sm">
               <Zap className="h-4 w-4 text-blue-600" />
@@ -41,7 +41,7 @@ export default function Home() {
       </div>
       
       {/* Features Section */}
-      <div id="features" className="max-w-6xl mx-auto px-6 py-20 space-y-12">
+      <div id="features" className="container-fluid py-20 space-y-12">
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-black tracking-tight drop-shadow-sm">Powerful Features</h2>
           <p className="text-gray-600 text-lg">Everything you need for smarter predictions</p>

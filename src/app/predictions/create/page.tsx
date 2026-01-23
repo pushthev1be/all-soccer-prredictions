@@ -457,9 +457,9 @@ export default function CreatePredictionPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-green-600/5" />
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 max-w-6xl relative z-10">
+      <div className="container-fluid section-spacing relative z-10">
         {/* Header */}
-        <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-6 rounded-lg sm:rounded-2xl shadow-lg border border-gray-100">
+        <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-6 rounded-lg sm:rounded-2xl shadow-lg border-2 border-gray-200">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-black mb-1 sm:mb-2">Make a Prediction</h1>
             <p className="text-xs sm:text-base text-gray-600">
@@ -490,7 +490,7 @@ export default function CreatePredictionPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
           {/* Form Section */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg sm:rounded-2xl p-3 sm:p-6 space-y-3 sm:space-y-4 shadow-lg">
+            <form onSubmit={handleSubmit} className="bg-white border-2 border-gray-200 rounded-lg sm:rounded-2xl p-3 sm:p-6 space-y-3 sm:space-y-4 shadow-lg">
               {/* Mode Toggle */}
               <div className="flex gap-2 sm:gap-4 mb-3 sm:mb-4">
                 <button
@@ -781,7 +781,7 @@ export default function CreatePredictionPage() {
 
           {/* Slip Sidebar */}
           {multiSlipMode && (
-            <div className="bg-white border border-gray-200 rounded-lg sm:rounded-2xl p-3 sm:p-6 h-fit sticky top-4 sm:top-8 shadow-sm">
+            <div className="bg-white border-2 border-gray-200 rounded-lg sm:rounded-2xl p-3 sm:p-6 h-fit sticky top-4 sm:top-8 shadow-lg">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Slip ({slipItems.length})</h2>
 
               {slipItems.length === 0 ? (
