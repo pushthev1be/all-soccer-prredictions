@@ -15,7 +15,8 @@ export default async function DashboardPage() {
   const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex">      {/* Admin Sidebar */}
+    <div className="min-h-screen relative overflow-hidden flex z-10">
+      {/* Admin Sidebar */}
       {isAdmin && (
         <div className="hidden lg:block w-64 bg-gray-900 text-white p-6 relative z-20">
           <div className="mb-8">

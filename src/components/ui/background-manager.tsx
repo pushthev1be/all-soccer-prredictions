@@ -21,19 +21,22 @@ export function BackgroundManager() {
   const src = useMemo(() => pickBackground(pathname), [pathname]);
 
   return (
-    <div className="background-root" aria-hidden>
-      {/* Background image */}
-      <Image
-        src={src}
-        alt="Page background"
-        fill
-        priority={pathname === "/" || pathname.startsWith("/dashboard")}
-        className="background-image"
-        sizes="100vw"
-      />
-      {/* Blending overlay & subtle vignette for text readability */}
-      <div className="background-overlay" />
-      <div className="background-vignette" />
-    </div>
+    <>
+      {/* Fixed background positioned behind all content */}
+      <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden" aria-hidden="true">
+        <Image
+          src={src}
+          alt="Page background"
+          fill
+          priority={pathname === "/" || pathname.startsWith("/dashboard")}
+          className="w-full h-full object-cover"
+          sizes="100vw"
+        />
+        {/* Overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/85" />
+        {/* Vignette */}
+        <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 200px rgba(0, 0, 0, 0.35)" }} />
+      </div>
+    </>
   );
 }

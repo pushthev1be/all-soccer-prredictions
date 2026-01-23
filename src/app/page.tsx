@@ -3,7 +3,7 @@ import { ArrowRight, Zap, BarChart3, Brain } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative z-10">
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl bg-white/50 backdrop-blur-md">
         <div className="relative container-fluid py-20 sm:py-28">
