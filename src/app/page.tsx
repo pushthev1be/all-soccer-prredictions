@@ -8,9 +8,9 @@ export default function Home() {
       <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl">
         <div className="relative max-w-6xl mx-auto px-6 py-20 sm:py-28">
           <div className="text-center space-y-8">
-            <div className="inline-flex items-center justify-center space-x-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-300">
-              <Zap className="h-4 w-4 text-gray-700" />
-              <span className="text-sm font-medium text-gray-700">AI-Powered Analysis</span>
+            <div className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border-2 border-blue-200 shadow-sm">
+              <Zap className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-semibold text-gray-900">AI-Powered Analysis</span>
             </div>
             
             <h1 className="text-5xl sm:text-6xl font-bold text-black leading-tight tracking-tight drop-shadow-sm">
@@ -57,11 +57,11 @@ export default function Home() {
             return (
               <div
                 key={i}
-                className="group p-6 rounded-xl bg-gray-50 border border-black/10 shadow-sm hover:border-black hover:shadow-md transition-all duration-300"
+                className="group p-6 rounded-xl bg-white border-2 border-gray-200 shadow-md hover:border-blue-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                <Icon className="h-10 w-10 text-black mb-4" />
-                <h3 className="text-lg font-semibold text-black mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.desc}</p>
+                <Icon className="h-10 w-10 text-blue-600 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">{feature.desc}</p>
               </div>
             );
           })}

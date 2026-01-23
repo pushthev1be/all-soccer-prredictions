@@ -129,34 +129,42 @@ export default async function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-black mb-4 sm:mb-6 tracking-tight">Your Statistics</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight">Your Statistics</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
-              { label: "Total Predictions", value: "0" },
-              { label: "Completed", value: "0" },
-              { label: "Pending", value: "0" },
-              { label: "Win Rate", value: "--" },
+              { label: "Total Predictions", value: "0", isPrimary: true },
+              { label: "Completed", value: "0", isPrimary: false },
+              { label: "Pending", value: "0", isPrimary: false },
+              { label: "Win Rate", value: "--", isPrimary: false },
             ].map((stat, i) => (
-              <div key={i} className="p-4 sm:p-6 rounded-xl bg-white text-black border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300">
-                <p className="text-gray-600 text-xs sm:text-sm font-medium mb-2">{stat.label}</p>
-                <p className="text-3xl sm:text-4xl font-bold">{stat.value}</p>
+              <div key={i} className={`p-4 sm:p-6 rounded-xl bg-gradient-to-br border-2 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                stat.isPrimary 
+                  ? "from-blue-50 to-indigo-50 border-blue-300" 
+                  : "from-white to-gray-50 border-gray-200 hover:border-blue-300"
+              }`}>
+                <p className="text-gray-700 text-xs sm:text-sm font-semibold mb-2 uppercase tracking-wide">{stat.label}</p>
+                <p className={`font-extrabold ${
+                  stat.isPrimary 
+                    ? "text-4xl sm:text-5xl text-blue-600" 
+                    : "text-3xl sm:text-4xl text-gray-900"
+                }`}>{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-md">
-          <h2 className="text-2xl font-bold text-black mb-6 tracking-tight drop-shadow-sm">Recent Activity</h2>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Recent Activity</h2>
           <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gray-300 mb-4">
-              <Zap className="h-6 w-6 text-gray-600" />
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-blue-300 mb-4 shadow-md">
+              <Zap className="h-8 w-8 text-blue-600" />
             </div>
-            <p className="text-gray-700 mb-4 font-medium">No predictions yet</p>
-            <p className="text-gray-600 text-sm mb-6">Create your first prediction to get AI feedback</p>
+            <p className="text-gray-900 mb-2 font-semibold text-lg">No predictions yet</p>
+            <p className="text-gray-700 text-sm mb-6 leading-relaxed">Create your first prediction to get AI-powered feedback</p>
             <Link
               href="/predictions/create"
-              className="inline-flex items-center justify-center px-6 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200"
+              className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
             >
               Create First Prediction
             </Link>
