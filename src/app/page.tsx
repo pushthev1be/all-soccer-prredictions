@@ -3,9 +3,9 @@ import { ArrowRight, Zap, BarChart3, Brain } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl">
+    <div className="min-h-screen">
+      {/* Hero Section */
+      <div className="relative overflow-hidden border-b border-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.05)] rounded-b-3xl bg-white/80 backdrop-blur-sm">
         <div className="relative container-fluid py-20 sm:py-28">
           <div className="text-center space-y-8">
             <div className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border-2 border-blue-200 shadow-sm">
@@ -57,7 +57,7 @@ export default function Home() {
             return (
               <div
                 key={i}
-                className="group p-6 rounded-xl bg-white border-2 border-gray-200 shadow-md hover:border-blue-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="group p-6 rounded-xl bg-white/85 backdrop-blur-sm border-2 border-gray-200 shadow-md hover:border-blue-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 <Icon className="h-10 w-10 text-blue-600 mb-4 group-hover:scale-110 transition-transform duration-300" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>

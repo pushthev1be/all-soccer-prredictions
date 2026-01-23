@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden flex">      {/* Admin Sidebar */}
+    <div className="min-h-screen relative overflow-hidden flex">      {/* Admin Sidebar */}
       {isAdmin && (
         <div className="hidden lg:block w-64 bg-gray-900 text-white p-6 relative z-20">
           <div className="mb-8">
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
 
       <div className="flex-1 container-fluid section-spacing relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white/85 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-gray-200">
           <div className="flex items-center gap-3 sm:gap-4">
             <UserAvatar user={session.user} size="lg" />
             <div>
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           <Link
             href="/predictions/create"
-            className="group p-4 sm:p-8 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white border-2 border-blue-500/50 shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
+            className="group p-4 sm:p-8 rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-700/90 text-white border-2 border-blue-500/50 shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 relative overflow-hidden backdrop-blur-sm"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10">
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
 
           <Link
             href="/predictions"
-            className="group p-4 sm:p-8 rounded-2xl bg-white text-black border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
+            className="group p-4 sm:p-8 rounded-2xl bg-white/85 backdrop-blur-sm text-black border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10">
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          <div className="p-4 sm:p-8 rounded-2xl bg-white border-2 border-gray-200 shadow-lg hover:border-green-300 transition-all duration-300 relative overflow-hidden group">
+          <div className="p-4 sm:p-8 rounded-2xl bg-white/85 backdrop-blur-sm border-2 border-gray-200 shadow-lg hover:border-green-300 transition-all duration-300 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10">
               <div className="mb-3 sm:mb-4">
@@ -136,10 +136,10 @@ export default async function DashboardPage() {
               { label: "Pending", value: "0", isPrimary: false },
               { label: "Win Rate", value: "--", isPrimary: false },
             ].map((stat, i) => (
-              <div key={i} className={`p-4 sm:p-6 rounded-xl bg-gradient-to-br border-2 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+              <div key={i} className={`p-4 sm:p-6 rounded-xl bg-gradient-to-br border-2 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm ${
                 stat.isPrimary 
-                  ? "from-blue-50 to-indigo-50 border-blue-300" 
-                  : "from-white to-gray-50 border-gray-200 hover:border-blue-300"
+                  ? "from-blue-50/85 to-indigo-50/85 border-blue-300" 
+                  : "from-white/85 to-gray-50/85 border-gray-200 hover:border-blue-300"
               }`}>
                 <p className="text-gray-700 text-xs sm:text-sm font-semibold mb-2 uppercase tracking-wide">{stat.label}</p>
                 <p className={`font-extrabold ${
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div className="bg-gradient-to-br from-white/85 to-gray-50/85 backdrop-blur-sm rounded-2xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Recent Activity</h2>
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-blue-300 mb-4 shadow-md">
