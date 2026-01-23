@@ -57,25 +57,16 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.03]"
-          style={{
-            backgroundImage: "url('/images/backgrounds/football-pattern.jpg')",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-green-50/50" />
-      </div>
+      {/* Global background shows through here */}
 
       <div className="flex-1 container-fluid section-spacing relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white/85 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white/50 backdrop-blur-lg p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-white/30">
           <div className="flex items-center gap-3 sm:gap-4">
             <UserAvatar user={session.user} size="lg" />
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight">Dashboard</h1>
-              <p className="text-sm sm:text-base text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>Dashboard</h1>
+              <p className="text-sm sm:text-base text-white/90">Welcome back, <span className="font-semibold text-white">{session.user?.name || session.user?.email}</span></p>
             </div>
           </div>
           <form action="/api/auth/signout" method="POST">
