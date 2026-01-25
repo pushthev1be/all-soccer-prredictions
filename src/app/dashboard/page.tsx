@@ -87,7 +87,7 @@ export default async function DashboardPage() {
             className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-black text-white border-2 border-black shadow-lg hover:shadow-xl hover:bg-gray-900 transition-all duration-200"
           >
             <div className="text-2xl sm:text-3xl font-bold mb-2">+</div>
-            <h3 className="text-base sm:text-lg font-bold mb-1">Create Prediction</h3>
+            <h3 className="text-base sm:text-lg font-bold mb-1 text-white">Create Prediction</h3>
             <p className="text-gray-300 text-xs sm:text-sm">Submit for AI analysis</p>
           </Link>
 
