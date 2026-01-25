@@ -62,18 +62,18 @@ export default async function DashboardPage() {
 
       <div className="flex-1 container-fluid section-spacing relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12 bg-white/50 backdrop-blur-lg p-4 sm:p-6 rounded-2xl shadow-lg border-2 border-white/30">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-10 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border-2 border-black">
           <div className="flex items-center gap-3 sm:gap-4">
             <UserAvatar user={session.user} size="lg" />
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight drop-shadow-lg\">Dashboard</h1>
-              <p className="text-sm sm:text-base text-white/90">Welcome back, <span className="font-semibold text-white">{session.user?.name || session.user?.email}</span></p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-black mb-1 tracking-tight">Dashboard</h1>
+              <p className="text-xs sm:text-base text-gray-600">Welcome back, <span className="font-semibold text-black">{session.user?.name || session.user?.email}</span></p>
             </div>
           </div>
           <form action="/api/auth/signout" method="POST">
             <button 
               type="submit"
-              className="px-6 py-2 bg-gray-200 text-black font-medium rounded-lg hover:bg-gray-300 transition-colors duration-200"
+              className="px-4 sm:px-6 py-2 bg-black text-white font-medium text-sm sm:text-base rounded-lg hover:bg-gray-800 transition-colors duration-200"
             >
               Sign Out
             </button>
@@ -81,81 +81,68 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
           <Link
             href="/predictions/create"
-            className="group p-4 sm:p-8 rounded-2xl bg-gradient-to-br from-blue-600/90 to-blue-700/90 text-white border-2 border-blue-500/50 shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 relative overflow-hidden backdrop-blur-sm"
+            className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-black text-white border-2 border-black shadow-lg hover:shadow-xl hover:bg-gray-900 transition-all duration-200"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <div className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">+</div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">Create Prediction</h3>
-              <p className="text-blue-100 text-xs sm:text-sm">Submit a new prediction for AI analysis</p>
-            </div>
+            <div className="text-2xl sm:text-3xl font-bold mb-2">+</div>
+            <h3 className="text-base sm:text-lg font-bold mb-1">Create Prediction</h3>
+            <p className="text-gray-300 text-xs sm:text-sm">Submit for AI analysis</p>
           </Link>
 
           <Link
             href="/predictions"
-            className="group p-4 sm:p-8 rounded-2xl bg-white/85 backdrop-blur-sm text-black border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
+            className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white text-black border-2 border-black shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <BarChart3 className="h-8 sm:h-10 w-8 sm:w-10 mb-3 sm:mb-4 text-blue-600" />
-              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">My Predictions</h3>
-              <p className="text-gray-600 text-xs sm:text-sm">View history and AI feedback</p>
-            </div>
+            <BarChart3 className="h-6 sm:h-8 w-6 sm:w-8 mb-2 sm:mb-3 text-black" />
+            <h3 className="text-base sm:text-lg font-bold mb-1">My Predictions</h3>
+            <p className="text-gray-600 text-xs sm:text-sm">View history and feedback</p>
           </Link>
 
-          <div className="p-4 sm:p-8 rounded-2xl bg-white/85 backdrop-blur-sm border-2 border-gray-200 shadow-lg hover:border-green-300 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <div className="mb-3 sm:mb-4">
-                <UserAvatar user={session.user} size="md" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 text-black">Profile</h3>
-              <p className="text-gray-600 text-xs sm:text-sm">{session.user?.email}</p>
+          <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border-2 border-black shadow-lg">
+            <div className="mb-2 sm:mb-3">
+              <UserAvatar user={session.user} size="md" />
             </div>
+            <h3 className="text-base sm:text-lg font-bold mb-1 text-black">Profile</h3>
+            <p className="text-gray-600 text-xs sm:text-sm truncate">{session.user?.email}</p>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 tracking-tight">Your Statistics</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="mb-6 sm:mb-10">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 tracking-tight">Your Statistics</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             {[
-              { label: "Total Predictions", value: "0", isPrimary: true },
+              { label: "Total", value: "0", isPrimary: true },
               { label: "Completed", value: "0", isPrimary: false },
               { label: "Pending", value: "0", isPrimary: false },
               { label: "Win Rate", value: "--", isPrimary: false },
             ].map((stat, i) => (
-              <div key={i} className={`p-4 sm:p-6 rounded-xl bg-gradient-to-br border-2 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm ${
+              <div key={i} className={`p-3 sm:p-5 rounded-xl border-2 shadow-md transition-all duration-200 ${
                 stat.isPrimary 
-                  ? "from-blue-50/85 to-indigo-50/85 border-blue-300" 
-                  : "from-white/85 to-gray-50/85 border-gray-200 hover:border-blue-300"
+                  ? "bg-black text-white border-black" 
+                  : "bg-white text-black border-black"
               }`}>
-                <p className="text-gray-700 text-xs sm:text-sm font-semibold mb-2 uppercase tracking-wide">{stat.label}</p>
-                <p className={`font-extrabold ${
-                  stat.isPrimary 
-                    ? "text-4xl sm:text-5xl text-blue-600" 
-                    : "text-3xl sm:text-4xl text-gray-900"
-                }`}>{stat.value}</p>
+                <p className={`text-[10px] sm:text-xs font-semibold mb-1 uppercase tracking-wide ${stat.isPrimary ? "text-gray-300" : "text-gray-500"}`}>{stat.label}</p>
+                <p className={`font-black text-2xl sm:text-4xl ${stat.isPrimary ? "text-white" : "text-black"}`}>{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gradient-to-br from-white/85 to-gray-50/85 backdrop-blur-sm rounded-2xl border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Recent Activity</h2>
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border-2 border-blue-300 mb-4 shadow-md">
-              <Zap className="h-8 w-8 text-blue-600" />
+        <div className="bg-white rounded-xl sm:rounded-2xl border-2 border-black p-4 sm:p-6 shadow-lg">
+          <h2 className="text-lg sm:text-xl font-bold text-black mb-4 tracking-tight">Recent Activity</h2>
+          <div className="text-center py-8 sm:py-10">
+            <div className="inline-flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-gray-100 border-2 border-black mb-3">
+              <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
             </div>
-            <p className="text-gray-900 mb-2 font-semibold text-lg">No predictions yet</p>
-            <p className="text-gray-700 text-sm mb-6 leading-relaxed">Create your first prediction to get AI-powered feedback</p>
+            <p className="text-black mb-1 font-bold text-sm sm:text-base">No predictions yet</p>
+            <p className="text-gray-600 text-xs sm:text-sm mb-4">Create your first prediction for AI feedback</p>
             <Link
               href="/predictions/create"
-              className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-black text-white font-semibold text-sm sm:text-base rounded-lg hover:bg-gray-800 transition-all duration-200"
             >
               Create First Prediction
             </Link>

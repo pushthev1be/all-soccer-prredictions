@@ -32,10 +32,10 @@ export function BackgroundManager() {
           className="w-full h-full object-cover"
           sizes="100vw"
         />
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/85" />
-        {/* Vignette */}
-        <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 200px rgba(0, 0, 0, 0.35)" }} />
+        {/* Overlay for text readability - clean black/white blend */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/90" />
+        {/* Subtle vignette for depth */}
+        <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 150px rgba(0, 0, 0, 0.4)" }} />
       </div>
     </>
   );
