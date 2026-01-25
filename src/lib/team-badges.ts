@@ -25,15 +25,23 @@ const TEAM_BADGE_MAP: Record<string, string> = {
   'leicester': 'https://media.api-sports.io/football/teams/46.png',
   'sheffield united': 'https://media.api-sports.io/football/teams/62.png',
   
-  // Serie A
-  'as roma': 'https://media.api-sports.io/football/teams/87.png',
-  'juventus': 'https://media.api-sports.io/football/teams/39.png',
-  'ac milan': 'https://media.api-sports.io/football/teams/73.png',
-  'inter milan': 'https://media.api-sports.io/football/teams/44.png',
-  'napoli': 'https://media.api-sports.io/football/teams/99.png',
-  'lazio': 'https://media.api-sports.io/football/teams/88.png',
-  'us sassuolo calcio': 'https://media.api-sports.io/football/teams/100.png',
-  'atalanta': 'https://media.api-sports.io/football/teams/90.png',
+  // Serie A (correct API-Sports IDs for Italian teams)
+  'as roma': 'https://media.api-sports.io/football/teams/497.png',
+  'roma': 'https://media.api-sports.io/football/teams/497.png',
+  'juventus': 'https://media.api-sports.io/football/teams/496.png',
+  'ac milan': 'https://media.api-sports.io/football/teams/489.png',
+  'milan': 'https://media.api-sports.io/football/teams/489.png',
+  'inter milan': 'https://media.api-sports.io/football/teams/505.png',
+  'inter': 'https://media.api-sports.io/football/teams/505.png',
+  'internazionale': 'https://media.api-sports.io/football/teams/505.png',
+  'napoli': 'https://media.api-sports.io/football/teams/492.png',
+  'lazio': 'https://media.api-sports.io/football/teams/487.png',
+  'fiorentina': 'https://media.api-sports.io/football/teams/502.png',
+  'atalanta': 'https://media.api-sports.io/football/teams/499.png',
+  'torino': 'https://media.api-sports.io/football/teams/503.png',
+  'bologna': 'https://media.api-sports.io/football/teams/500.png',
+  'udinese': 'https://media.api-sports.io/football/teams/494.png',
+  'sassuolo': 'https://media.api-sports.io/football/teams/488.png',
   
   // La Liga
   'real madrid': 'https://media.api-sports.io/football/teams/541.png',
