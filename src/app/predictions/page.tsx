@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import PredictionsList from "@/components/predictions/predictions-list";
+import { LiveScores } from "@/components/live-scores/live-scores";
 
 export default async function PredictionsPage() {
   const session = await getServerSession(authOptions);
@@ -13,6 +14,9 @@ export default async function PredictionsPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Live Scores Bar */}
+      <LiveScores />
+      
       <div className="container-fluid section-spacing">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-6 mb-4 sm:mb-8 bg-white p-3 sm:p-6 rounded-lg sm:rounded-2xl border-2 border-black">
           <div>

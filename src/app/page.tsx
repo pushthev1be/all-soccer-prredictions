@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Zap, BarChart3, Brain } from "lucide-react";
+import { LiveScores } from "@/components/live-scores/live-scores";
 
 export default function Home() {
   return (
     <div className="min-h-screen relative z-10">
+      {/* Live Scores Bar */}
+      <LiveScores />
+      
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="relative container-fluid py-12 sm:py-20">
