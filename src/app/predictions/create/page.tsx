@@ -181,7 +181,7 @@ export default function CreatePredictionPage() {
       
       setFixturesLoading(true);
       try {
-        const response = await fetch(`/api/fixtures?league=${selectedLeague}&limit=10`);
+        const response = await fetch(`/api/fixtures?league=${selectedLeague}&limit=50&days=7`);
         if (response.ok) {
           const data = await response.json();
           setFixtures(data.fixtures || []);

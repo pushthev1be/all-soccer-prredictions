@@ -6,7 +6,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const league = searchParams.get('league') as LeagueSlug | null;
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 20);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50);
+    const days = parseInt(searchParams.get('days') || '', 10);
+    const hasDaysWindow = Number.isFinite(days) && days > 0;
+    const cutoffDate = hasDaysWindow ? new Date(Date.now() + days * 24 * 60 * 60 * 1000) : null;
     const source = searchParams.get('source'); // 'api', 'scraper', or 'auto'
 
     if (!league || !LEAGUE_CODES[league]) {
@@ -25,9 +28,13 @@ export async function GET(request: NextRequest) {
         const scrapingService = getScrapingService();
         const scrapedFixtures = await scrapingService.getUpcomingFixtures(league, limit);
 
-        if (scrapedFixtures.length > 0) {
+        const filteredScrapedFixtures = hasDaysWindow
+          ? scrapedFixtures.filter((f) => f.kickoff <= (cutoffDate as Date))
+          : scrapedFixtures;
+
+        if (filteredScrapedFixtures.length > 0) {
           // Convert to FootballFixture format
-          const fixtures = scrapedFixtures.map((f, index) => ({
+          const fixtures = filteredScrapedFixtures.map((f, index) => ({
             id: index + 1,
             homeTeam: f.homeTeam,
             awayTeam: f.awayTeam,
@@ -64,15 +71,18 @@ export async function GET(request: NextRequest) {
     // Fallback to football-data.org API
     if (!source || source === 'auto' || source === 'api') {
       const fixtures = await fetchUpcomingFixtures(league, limit);
+      const filteredFixtures = hasDaysWindow
+        ? fixtures.filter((f) => new Date(f.kickoff) <= (cutoffDate as Date))
+        : fixtures;
 
       return NextResponse.json(
         {
           success: true,
           league,
           leagueInfo: LEAGUE_CODES[league],
-          count: fixtures.length,
-          fixtures,
-          source: fixtures.length > 0 && fixtures[0].id ? 'football-data-api' : 'static-fallback',
+          count: filteredFixtures.length,
+          fixtures: filteredFixtures,
+          source: filteredFixtures.length > 0 && filteredFixtures[0].id ? 'football-data-api' : 'static-fallback',
         },
         {
           headers: {
