@@ -136,15 +136,6 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
     return matchesQuery && matchesStatus && matchesMarket && matchesCompetition;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "bg-green-100 text-green-800";
-      case "processing": return "bg-yellow-100 text-yellow-800";
-      case "failed": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "completed": return "Ready";
@@ -183,29 +174,29 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="rounded-2xl border-2 border-black bg-white p-4 sm:p-6 space-y-6">
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
-          <p className="text-sm text-gray-600 mb-1">Total</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+        <div className="p-4 rounded-lg bg-white border-2 border-black">
+          <p className="text-sm text-gray-700 mb-1">Total</p>
+          <p className="text-2xl font-bold text-black">{stats.total}</p>
         </div>
-        <div className="p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
-          <p className="text-sm text-gray-600 mb-1">Completed</p>
-          <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+        <div className="p-4 rounded-lg bg-white border-2 border-black">
+          <p className="text-sm text-gray-700 mb-1">Completed</p>
+          <p className="text-2xl font-bold text-black">{stats.completed}</p>
         </div>
-        <div className="p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
-          <p className="text-sm text-gray-600 mb-1">Pending</p>
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+        <div className="p-4 rounded-lg bg-white border-2 border-black">
+          <p className="text-sm text-gray-700 mb-1">Pending</p>
+          <p className="text-2xl font-bold text-black">{stats.pending}</p>
         </div>
-        <div className="p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
-          <p className="text-sm text-gray-600 mb-1">Processing</p>
-          <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
+        <div className="p-4 rounded-lg bg-white border-2 border-black">
+          <p className="text-sm text-gray-700 mb-1">Processing</p>
+          <p className="text-2xl font-bold text-black">{stats.processing}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-3">
+      <div className="flex flex-col lg:flex-row items-stretch gap-3">
         <div className="flex-1">
           <Input
             placeholder="Search by market, pick, or reasoning..."
@@ -213,9 +204,9 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-10 rounded-md border-2 border-black bg-white px-3 py-2 text-sm text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -226,7 +217,7 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
             <option value="failed">Failed</option>
           </select>
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-10 rounded-md border-2 border-black bg-white px-3 py-2 text-sm text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
             value={market}
             onChange={(e) => setMarket(e.target.value)}
           >
@@ -236,7 +227,7 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
             ))}
           </select>
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-10 rounded-md border-2 border-black bg-white px-3 py-2 text-sm text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
             value={competition}
             onChange={(e) => setCompetition(e.target.value)}
           >
@@ -256,7 +247,7 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
                 setMarket("all");
                 setCompetition("all");
               }}
-              className="gap-1"
+              className="gap-1 border-2 border-black text-black hover:bg-gray-100"
             >
               <X className="h-4 w-4" /> Clear
             </Button>
@@ -268,25 +259,25 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
       {(query || status !== "all" || market !== "all" || competition !== "all") && (
         <div className="flex flex-wrap gap-2">
           {query && (
-            <Badge variant="secondary" className="gap-1 pl-2">
+            <Badge variant="outline" className="gap-1 pl-2 border-black text-black bg-white">
               Search: "{query}"
               <button onClick={() => setQuery("")}> <X className="h-3 w-3 ml-1" /> </button>
             </Badge>
           )}
           {status !== "all" && (
-            <Badge variant="secondary" className="gap-1 pl-2">
+            <Badge variant="outline" className="gap-1 pl-2 border-black text-black bg-white">
               Status: {status}
               <button onClick={() => setStatus("all")}> <X className="h-3 w-3 ml-1" /> </button>
             </Badge>
           )}
           {market !== "all" && (
-            <Badge variant="secondary" className="gap-1 pl-2">
+            <Badge variant="outline" className="gap-1 pl-2 border-black text-black bg-white">
               Market: {market}
               <button onClick={() => setMarket("all")}> <X className="h-3 w-3 ml-1" /> </button>
             </Badge>
           )}
           {competition !== "all" && (
-            <Badge variant="secondary" className="gap-1 pl-2">
+            <Badge variant="outline" className="gap-1 pl-2 border-black text-black bg-white">
               Competition: {competition}
               <button onClick={() => setCompetition("all")}> <X className="h-3 w-3 ml-1" /> </button>
             </Badge>
@@ -302,11 +293,11 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
         />
       ) : (
         <>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-700">
             Showing {filtered.length} of {predictions.length}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4">
             {filtered.map((p) => {
               const competitionLabel = getCompetitionLabel(p) || undefined;
               const homeTeam = teamNameFromCanonical(p.canonicalHomeTeamId) || undefined;
@@ -333,7 +324,7 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
                   <button
                     onClick={() => handleDelete(p.id)}
                     disabled={deleting === p.id}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg disabled:opacity-50"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black hover:bg-gray-900 text-white p-2 rounded-lg shadow-lg disabled:opacity-50"
                     title="Delete prediction"
                   >
                     {deleting === p.id ? (

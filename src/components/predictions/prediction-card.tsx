@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { statusColors } from "@/lib/tokens";
 
 type LegacyStatus = "pending" | "processing" | "completed" | "failed";
 export type PredictionStatus = LegacyStatus | "live" | "won" | "lost" | "void";
@@ -42,35 +41,35 @@ function normalizeStatus(status: PredictionStatus): {
     case "won":
       return { 
         label: "Won", 
-        colorClass: "text-emerald-700", 
-        badgeVariant: "default", 
-        Icon: (p) => <CheckCircle2 className={cn(p.className, "text-emerald-600")} /> 
+        colorClass: "text-black", 
+        badgeVariant: "outline", 
+        Icon: (p) => <CheckCircle2 className={cn(p.className, "text-black")} /> 
       };
     case "failed":
     case "lost":
       return { 
         label: "Lost", 
-        colorClass: "text-rose-700", 
-        badgeVariant: "destructive", 
-        Icon: (p) => <TrendingDown className={cn(p.className, "text-rose-600")} /> 
+        colorClass: "text-black", 
+        badgeVariant: "outline", 
+        Icon: (p) => <TrendingDown className={cn(p.className, "text-black")} /> 
       };
     case "processing":
     case "live":
       return { 
         label: "Live", 
-        colorClass: "text-blue-700", 
-        badgeVariant: "default", 
-        Icon: (p) => <Clock className={cn(p.className, "text-blue-600")} /> 
+        colorClass: "text-black", 
+        badgeVariant: "outline", 
+        Icon: (p) => <Clock className={cn(p.className, "text-black")} /> 
       };
     case "void":
-      return { label: "Void", colorClass: "text-gray-700", badgeVariant: "outline", Icon: (p) => <Clock className={cn(p.className, "text-gray-600")} /> };
+      return { label: "Void", colorClass: "text-black", badgeVariant: "outline", Icon: (p) => <Clock className={cn(p.className, "text-black")} /> };
     case "pending":
     default:
       return { 
         label: "Pending", 
-        colorClass: "text-slate-700", 
-        badgeVariant: "secondary", 
-        Icon: (p) => <Clock className={cn(p.className, "text-slate-600")} /> 
+        colorClass: "text-black", 
+        badgeVariant: "outline", 
+        Icon: (p) => <Clock className={cn(p.className, "text-black")} /> 
       };
   }
 }
@@ -81,28 +80,13 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
   const hasRoi = typeof prediction.stake === "number" && typeof prediction.potentialWin === "number";
   const roi = hasRoi && prediction.stake! > 0 ? ((prediction.potentialWin! - prediction.stake!) / prediction.stake!) * 100 : null;
 
-  const statusGradients: Record<PredictionStatus, string> = {
-    completed: "from-emerald-50 to-green-100 border-emerald-400 shadow-emerald-100",
-    won: "from-emerald-50 to-green-100 border-emerald-400 shadow-emerald-100",
-    failed: "from-rose-50 to-red-100 border-rose-400 shadow-rose-100",
-    lost: "from-rose-50 to-red-100 border-rose-400 shadow-rose-100",
-    processing: "from-blue-50 to-indigo-100 border-blue-400 shadow-blue-100",
-    live: "from-amber-50 to-yellow-100 border-amber-400 shadow-amber-100",
-    pending: "from-slate-50 to-gray-100 border-slate-300 shadow-slate-100",
-    void: "from-gray-100 to-gray-200 border-gray-400 shadow-gray-100",
-  };
-
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300 shadow-sm",
-        "hover:shadow-2xl hover:-translate-y-1",
-        "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/0 before:to-white/10",
-        "before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
-        "border-2",
-        statusGradients[prediction.status],
-        "bg-gradient-to-br",
-        onClick && "cursor-pointer active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+        "group relative overflow-hidden transition-all duration-300",
+        "hover:shadow-lg hover:-translate-y-0.5",
+        "border-2 border-black bg-white",
+        onClick && "cursor-pointer active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-2",
       )}
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -140,7 +124,7 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             <Icon className={cn("h-6 w-6", colorClass)} />
-            <Badge variant={badgeVariant} className="font-semibold text-xs">{label}</Badge>
+            <Badge variant={badgeVariant} className="font-semibold text-xs border-black text-black bg-white">{label}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -148,7 +132,7 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
       <CardContent className={cn("space-y-4 relative z-10", variant === "compact" && "p-0") }>
         {/* Prediction Details */}
         <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="font-semibold text-xs bg-gray-100 text-black border-gray-300">
+          <Badge variant="outline" className="font-semibold text-xs bg-white text-black border-black">
             {prediction.market}
           </Badge>
           <Badge className="font-bold text-xs bg-black text-white">
@@ -157,23 +141,23 @@ export function PredictionCard({ prediction, variant = "default", onClick }: Pre
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 py-3 bg-white border-2 border-gray-200 rounded-lg px-3 shadow-sm">
+        <div className="grid grid-cols-3 gap-3 py-3 bg-white border-2 border-black rounded-lg px-3">
           {typeof prediction.odds === "number" && (
             <div>
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Odds</p>
-              <p className="text-lg font-extrabold text-gray-900">{prediction.odds.toFixed(2)}</p>
+              <p className="text-lg font-extrabold text-black">{prediction.odds.toFixed(2)}</p>
             </div>
           )}
           {typeof prediction.stake === "number" && (
             <div>
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Stake</p>
-              <p className="text-lg font-extrabold text-gray-900">${prediction.stake}</p>
+              <p className="text-lg font-extrabold text-black">${prediction.stake}</p>
             </div>
           )}
           {roi !== null && (
             <div>
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">ROI</p>
-              <p className={cn("text-lg font-extrabold", roi > 0 ? "text-emerald-600" : "text-rose-600")}>
+              <p className="text-lg font-extrabold text-black">
                 {roi > 0 ? "+" : ""}{roi.toFixed(1)}%
               </p>
             </div>
