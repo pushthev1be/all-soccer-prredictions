@@ -147,9 +147,9 @@ export default async function DashboardPage() {
             <p className="text-gray-600 text-xs sm:text-sm mb-4">Create your first prediction for AI feedback</p>
             <Link
               href="/predictions/create"
-              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-black text-white font-semibold text-sm sm:text-base rounded-lg hover:bg-gray-800 transition-all duration-200"
+              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-black font-semibold text-sm sm:text-base rounded-lg hover:bg-gray-800 transition-all duration-200"
             >
-              Create First Prediction
+              <span className="text-white">Create First Prediction</span>
             </Link>
           </div>
         </div>

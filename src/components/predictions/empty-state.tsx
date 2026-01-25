@@ -41,15 +41,15 @@ export function EmptyState({
           onClick={onAction}
           className={cn(
             "inline-flex items-center gap-2 px-6 py-3 rounded-xl",
-            "bg-black text-white font-semibold",
+            "bg-black font-semibold",
             "hover:bg-gray-900",
             "transition-all duration-200",
             "hover:scale-105 hover:shadow-lg",
             "active:scale-95"
           )}
         >
-          <PlusCircle className="h-5 w-5" />
-          {actionLabel}
+          <PlusCircle className="h-5 w-5 text-white" />
+          <span className="text-white">{actionLabel}</span>
         </button>
       )}
     </div>
