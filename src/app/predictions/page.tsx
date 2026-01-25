@@ -32,9 +32,9 @@ export default async function PredictionsPage() {
             </Link>
             <Link
               href="/predictions/create"
-              className="flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 bg-black text-white font-medium text-sm sm:text-base rounded-lg hover:bg-gray-900 transition-all duration-200"
+              className="flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 bg-black font-medium text-sm sm:text-base rounded-lg hover:bg-gray-900 transition-all duration-200"
             >
-              + New
+              <span className="text-white">+ New</span>
             </Link>
           </div>
         </div>
