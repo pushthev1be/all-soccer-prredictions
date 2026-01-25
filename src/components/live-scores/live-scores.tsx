@@ -44,8 +44,8 @@ export function LiveScores() {
     }
 
     fetchScores();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchScores, 60000);
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchScores, 30000);
     return () => clearInterval(interval);
   }, []);
 
