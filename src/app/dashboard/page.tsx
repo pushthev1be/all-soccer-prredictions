@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { BarChart3, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { LiveScores } from "@/components/live-scores/live-scores";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -15,7 +16,11 @@ export default async function DashboardPage() {
   const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex z-10">
+    <div className="min-h-screen relative overflow-hidden z-10">
+      {/* Live Scores Bar */}
+      <LiveScores />
+      
+      <div className="flex">
       {/* Admin Sidebar */}
       {isAdmin && (
         <div className="hidden lg:block w-64 bg-gray-900 text-white p-6 relative z-20">
@@ -148,6 +153,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
