@@ -3,13 +3,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 AI-powered soccer prediction feedback platform.
 
+## 📹 Project Demo
+
+[Watch the Loom demo here](https://www.loom.com/share/c5abc80401564797a171832623384c1d)
+
 ## Features
-- Email authentication (NextAuth.js, custom pages)
-- Modern dashboard and landing page UI
-- Evidence-based feedback for soccer predictions
-- PostgreSQL and Redis support (Docker Compose)
-- Prisma ORM with migrations
-- Tailwind CSS and custom theming
 
 ## Getting Started
 
