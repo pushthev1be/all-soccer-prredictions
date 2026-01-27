@@ -408,7 +408,7 @@ a,
   /* Touch device - no hover effects */
   .hover-target:hover {
     transform: none;
-    background-color: inherit;
+    background-color: var(--color-bg-inherit, inherit);
   }
 }
 
