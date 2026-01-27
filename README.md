@@ -2,6 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 # All Soccer Predictions
 
 AI-powered soccer prediction feedback platform.
+https://all-soccer-prredictions-agzd.onrender.com
 
 ## 📹 Project Demo
 
