@@ -207,6 +207,7 @@ export default async function DashboardPage() {
                 View all predictions →
               </Link>
             </div>
+<<<<<<< HEAD
           ) : (
             <div className="text-center py-8 sm:py-10">
               <div className="inline-flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-gray-100 border-2 border-black mb-3">
@@ -222,6 +223,17 @@ export default async function DashboardPage() {
               </Link>
             </div>
           )}
+=======
+            <p className="text-black mb-1 font-bold text-sm sm:text-base">No predictions yet</p>
+            <p className="text-gray-600 text-xs sm:text-sm mb-4">Create your first prediction for AI feedback</p>
+            <Link
+              href="/predictions/create"
+              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-black text-white font-semibold text-sm sm:text-base rounded-lg hover:bg-gray-800 transition-all duration-200 !text-white hover:!text-white"
+            >
+              Create First Prediction
+            </Link>
+          </div>
+>>>>>>> 90057f3 (Commit all local changes before pull)
         </div>
       </div>
       </div>
