@@ -4,6 +4,30 @@
 
 ## Progress Log
 
+### [2026-01-25] - 🗓️ Fixtures Next-Week Window + Mobile Contrast Fix
+
+**Session Summary:**
+Expanded the fixtures dropdown to include matches for the next 7 days and improved mobile readability for the Create Prediction card text.
+
+**Major Changes:**
+1. **Fixtures Window Extension**
+  - Updated fixtures API to support a `days` window and increased limit cap.
+  - Create Prediction page now requests next-week fixtures (`days=7`) with a higher limit.
+
+2. **Mobile Text Contrast**
+  - Forced “Create Prediction” text to white for better visibility on mobile.
+
+**Files Modified:**
+- [src/app/api/fixtures/route.ts](src/app/api/fixtures/route.ts)
+- [src/app/predictions/create/page.tsx](src/app/predictions/create/page.tsx)
+- [src/app/dashboard/page.tsx](src/app/dashboard/page.tsx)
+
+**Commits:**
+- 5b16e0a - Extend fixtures to next week
+- 854de02 - Set create prediction text to white
+
+---
+
 ### [2026-01-20] - 📱 Mobile-First Responsive Design Optimization
 
 **Session Summary:**
