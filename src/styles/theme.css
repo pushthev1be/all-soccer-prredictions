@@ -3,7 +3,7 @@
  * Automatic fluid typography, spacing, and responsive design
  */
 
-@theme {
+:root {
   /* Fluid font sizes that automatically scale between mobile and desktop */
   --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
   --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
@@ -86,8 +86,8 @@
 }
 
 /* Intrinsic responsive images */
-img, video, svg {
-  max-width: 100%;
+
+:root {
   height: auto;
 }
 
