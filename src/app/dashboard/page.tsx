@@ -53,11 +53,11 @@ export default async function DashboardPage() {
       <LiveScores />
       
       <div className="flex">
-      {/* ...existing code... */}
-                    {/* Main Content */}
-                    <div className="flex-1 container-fluid section-spacing relative z-10">
-                      {/* Header */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-10 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border-2 border-black">
+        {/* ...existing code... */}
+        {/* Main Content */}
+        <div className="flex-1 container-fluid section-spacing relative z-10">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-10 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border-2 border-black">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <UserAvatar user={session.user} size="lg" />
                           <div>
@@ -73,9 +73,9 @@ export default async function DashboardPage() {
                             Sign Out
                           </button>
                         </form>
-                      </div>
-                      {/* Quick Actions */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
+          </div>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
                         <Link
                           href="/predictions/create"
                           className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-black text-white border-2 border-black shadow-lg hover:shadow-xl hover:bg-gray-900 transition-all duration-200"
@@ -98,8 +98,8 @@ export default async function DashboardPage() {
                           </div>
                           <h3 className="text-base sm:text-lg font-bold mb-1 text-black">Profile</h3>
                           <p className="text-gray-600 text-xs sm:text-sm truncate">{session.user?.email}</p>
-                        </div>
-                      </div>
+            </div>
+          </div>
                       {/* Stats Cards */}
                       {/* Stats Cards */}
                       <div className="mb-6 sm:mb-10">
@@ -178,5 +178,6 @@ export default async function DashboardPage() {
                         )}
                       </div>
       </div>
-      );
-}
+    </div>
+  );
+    }
