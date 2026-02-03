@@ -6,7 +6,16 @@ const scraper = new FootballScraper();
 
 export class ScrapingService {
   private isRunning = false;
-  private leagues = ['premier-league', 'champions-league', 'la-liga', 'bundesliga', 'serie-a', 'ligue-1'];
+  private leagues = [
+    'premier-league',
+    'fa-cup',
+    'carabao-cup',
+    'champions-league',
+    'la-liga',
+    'bundesliga',
+    'serie-a',
+    'ligue-1',
+  ];
   private cronJob: cron.ScheduledTask | null = null;
 
   async startScheduledScraping() {
@@ -99,9 +108,10 @@ export class ScrapingService {
     for (const fixture of fixtures) {
       try {
         const kickoffDate = new Date(fixture.kickoff);
+        const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000);
         
         // Skip invalid dates or past fixtures
-        if (isNaN(kickoffDate.getTime()) || kickoffDate < new Date()) {
+        if (isNaN(kickoffDate.getTime()) || kickoffDate < cutoff) {
           continue;
         }
 
@@ -151,12 +161,13 @@ export class ScrapingService {
 
   async getUpcomingFixtures(league: string, limit: number = 10) {
     const competitionName = this.mapLeagueName(league);
+    const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000);
     
     const fixtures = await prisma.fixture.findMany({
       where: {
         competition: { contains: competitionName, mode: 'insensitive' },
-        kickoff: { gt: new Date() },
-        status: 'SCHEDULED',
+        kickoff: { gt: cutoff },
+        status: { in: ['SCHEDULED', 'TIMED', 'IN_PLAY'] },
       },
       orderBy: { kickoff: 'asc' },
       take: limit,
@@ -171,8 +182,8 @@ export class ScrapingService {
       return await prisma.fixture.findMany({
         where: {
           competition: { contains: competitionName, mode: 'insensitive' },
-          kickoff: { gt: new Date() },
-          status: 'SCHEDULED',
+          kickoff: { gt: cutoff },
+          status: { in: ['SCHEDULED', 'TIMED', 'IN_PLAY'] },
         },
         orderBy: { kickoff: 'asc' },
         take: limit,
@@ -225,6 +236,8 @@ export class ScrapingService {
   private mapLeagueName(slug: string): string {
     const mapping: Record<string, string> = {
       'premier-league': 'Premier League',
+      'fa-cup': 'FA Cup',
+      'carabao-cup': 'Carabao Cup',
       'la-liga': 'La Liga',
       'bundesliga': 'Bundesliga',
       'serie-a': 'Serie A',

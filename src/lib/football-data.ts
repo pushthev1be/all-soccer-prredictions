@@ -58,7 +58,7 @@ export async function fetchUpcomingFixtures(
 
   try {
     const response = await axios.get(
-      `${BASE_URL}/competitions/${leagueConfig.code}/matches?status=SCHEDULED`,
+      `${BASE_URL}/competitions/${leagueConfig.code}/matches?status=SCHEDULED,TIMED,IN_PLAY`,
       {
         headers: {
           'X-Auth-Token': API_KEY,
@@ -209,6 +209,17 @@ function getStaticFixtures(leagueSlug: LeagueSlug): FootballFixture[] {
       },
     ],
     'carabao-cup': [
+      {
+        id: 500,
+        homeTeam: 'Arsenal',
+        awayTeam: 'Chelsea',
+        competition: 'Carabao Cup',
+        competitionCode: 'ELC',
+        kickoff: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+        status: 'SCHEDULED',
+        venue: 'Emirates Stadium',
+        odds: { homeWin: 2.1, draw: 3.4, awayWin: 3.3 },
+      },
       {
         id: 501,
         homeTeam: 'Manchester City',
