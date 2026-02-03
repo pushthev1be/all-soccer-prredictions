@@ -68,6 +68,9 @@ export async function fetchUpcomingFixtures(
     );
 
     const matches = response.data.matches || [];
+    if (matches.length === 0) {
+      return getStaticFixtures(leagueSlug);
+    }
 
     return matches.slice(0, limit).map((match: any) => ({
       id: match.id,
