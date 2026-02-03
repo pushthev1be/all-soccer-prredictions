@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         : fixtures;
     }
 
-    let combinedFixtures = mergeFixtures(scraperFixtures, apiFixtures).slice(0, limit);
+    let combinedFixtures = mergeFixtures(scraperFixtures, apiFixtures);
 
     if (league === 'carabao-cup') {
       const hasArsenalChelsea = combinedFixtures.some((f) => {
@@ -91,24 +91,23 @@ export async function GET(request: NextRequest) {
         const kickoff = new Date();
         kickoff.setHours(15, 0, 0, 0);
 
-        combinedFixtures = mergeFixtures(
-          combinedFixtures,
-          [
-            {
-              id: combinedFixtures.length + 1,
-              homeTeam: 'Arsenal',
-              awayTeam: 'Chelsea',
-              competition: 'Carabao Cup',
-              competitionCode: LEAGUE_CODES[league].code,
-              kickoff: kickoff.toISOString(),
-              status: 'TIMED',
-              venue: 'Emirates Stadium',
-              odds: undefined,
-            },
-          ]
-        ).slice(0, limit);
+        combinedFixtures = mergeFixtures(combinedFixtures, [
+          {
+            id: combinedFixtures.length + 1,
+            homeTeam: 'Arsenal',
+            awayTeam: 'Chelsea',
+            competition: 'Carabao Cup',
+            competitionCode: LEAGUE_CODES[league].code,
+            kickoff: kickoff.toISOString(),
+            status: 'TIMED',
+            venue: 'Emirates Stadium',
+            odds: undefined,
+          },
+        ]);
       }
     }
+
+    combinedFixtures = combinedFixtures.slice(0, limit);
 
     return NextResponse.json(
       {
