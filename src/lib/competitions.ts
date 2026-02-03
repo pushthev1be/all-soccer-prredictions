@@ -42,6 +42,42 @@ export const competitions: Competition[] = [
     ],
   },
   {
+    id: "fa-cup",
+    name: "FA Cup",
+    category: "domestic",
+    region: "England",
+    icon: "🏆",
+    teams: [
+      "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+      "Chelsea", "Crystal Palace", "Everton", "Fulham", "Ipswich Town",
+      "Leicester City", "Liverpool", "Manchester City", "Manchester United", "Newcastle",
+      "Nottingham Forest", "Southampton", "Tottenham", "West Ham", "Wolverhampton"
+    ],
+    fixtures: [
+      { home: "Manchester United", away: "Newcastle", kickoff: plusDays(5) },
+      { home: "Arsenal", away: "Liverpool", kickoff: plusDays(6) },
+      { home: "Chelsea", away: "Tottenham", kickoff: plusDays(7) },
+    ],
+  },
+  {
+    id: "carabao-cup",
+    name: "Carabao Cup",
+    category: "domestic",
+    region: "England",
+    icon: "🏆",
+    teams: [
+      "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
+      "Chelsea", "Crystal Palace", "Everton", "Fulham", "Ipswich Town",
+      "Leicester City", "Liverpool", "Manchester City", "Manchester United", "Newcastle",
+      "Nottingham Forest", "Southampton", "Tottenham", "West Ham", "Wolverhampton"
+    ],
+    fixtures: [
+      { home: "Manchester City", away: "Tottenham", kickoff: plusDays(8) },
+      { home: "Liverpool", away: "Arsenal", kickoff: plusDays(9) },
+      { home: "Newcastle", away: "Chelsea", kickoff: plusDays(10) },
+    ],
+  },
+  {
     id: "la-liga",
     name: "La Liga",
     category: "domestic",

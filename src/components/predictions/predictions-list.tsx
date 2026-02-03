@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { PredictionCard } from "./prediction-card";
@@ -38,6 +39,7 @@ interface PredictionsListProps {
 }
 
 export default function PredictionsList({ userId }: PredictionsListProps) {
+  const router = useRouter();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -320,6 +322,7 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
                       startTime: p.kickoffTimeUTC || undefined,
                     }}
                     variant="compact"
+                    onClick={() => router.push(`/predictions/${p.id}`)}
                   />
                   <button
                     onClick={() => handleDelete(p.id)}

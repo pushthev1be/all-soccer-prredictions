@@ -502,7 +502,7 @@ export class SportsDataProvider {
 
   private formatTeamName(canonicalId: string): string {
     return canonicalId
-      .replace(/^(custom:|premier-league:|la-liga:|serie-a:|bundesliga:|ligue-1:|afcon:|champions-league:|world-cup:|euros:)/, '')
+      .replace(/^(custom:|premier-league:|fa-cup:|carabao-cup:|la-liga:|serie-a:|bundesliga:|ligue-1:|afcon:|champions-league:|world-cup:|euros:)/, '')
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
@@ -511,6 +511,8 @@ export class SportsDataProvider {
   private formatCompetitionName(canonicalId: string): string {
     const competitionMap: Record<string, string> = {
       'premier-league': 'English Premier League',
+      'fa-cup': 'FA Cup',
+      'carabao-cup': 'Carabao Cup',
       'la-liga': 'La Liga',
       'serie-a': 'Serie A',
       'bundesliga': 'Bundesliga',
