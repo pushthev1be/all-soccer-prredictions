@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { BackgroundManager } from "@/components/ui/background-manager";
+import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
@@ -20,7 +21,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={plusJakartaSans.className}>
         <BackgroundManager />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <div className="with-mobile-bottom-nav">{children}</div>
+          <MobileBottomNav />
+        </AuthProvider>
       </body>
     </html>
   );
