@@ -22,8 +22,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Try web scraper first (primary source)
-    if (!source || source === 'auto' || source === 'scraper') {
+    const scraperEnabled = !source || source === 'auto' || source === 'scraper';
+    const apiEnabled = !source || source === 'auto' || source === 'api';
+
+    const mergeFixtures = (primary: any[], secondary: any[]) => {
+      const result = [...primary];
+      for (const fixture of secondary) {
+        const kickoffTime = new Date(fixture.kickoff).getTime();
+        const exists = result.some((f) => {
+          const timeDiff = Math.abs(new Date(f.kickoff).getTime() - kickoffTime);
+          return (
+            f.homeTeam === fixture.homeTeam &&
+            f.awayTeam === fixture.awayTeam &&
+            timeDiff <= 60 * 60 * 1000
+          );
+        });
+        if (!exists) result.push(fixture);
+      }
+      return result.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime());
+    };
+
+    let scraperFixtures: any[] = [];
+    let lastScraped: Date | undefined;
+    if (scraperEnabled) {
       try {
         const scrapingService = getScrapingService();
         const scrapedFixtures = await scrapingService.getUpcomingFixtures(league, limit);
@@ -32,65 +53,55 @@ export async function GET(request: NextRequest) {
           ? scrapedFixtures.filter((f) => f.kickoff <= (cutoffDate as Date))
           : scrapedFixtures;
 
-        if (filteredScrapedFixtures.length > 0) {
-          // Convert to FootballFixture format
-          const fixtures = filteredScrapedFixtures.map((f, index) => ({
-            id: index + 1,
-            homeTeam: f.homeTeam,
-            awayTeam: f.awayTeam,
-            competition: f.competition,
-            competitionCode: LEAGUE_CODES[league].code,
-            kickoff: f.kickoff.toISOString(),
-            status: f.status,
-            venue: f.venue,
-            odds: undefined, // Scraper doesn't get odds yet
-          }));
-
-          return NextResponse.json(
-            {
-              success: true,
-              league,
-              leagueInfo: LEAGUE_CODES[league],
-              count: fixtures.length,
-              fixtures,
-              source: 'web-scraper',
-              lastScraped: scrapedFixtures[0]?.scrapedAt,
-            },
-            {
-              headers: {
-                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
-              },
-            }
-          );
-        }
+        scraperFixtures = filteredScrapedFixtures.map((f, index) => ({
+          id: index + 1,
+          homeTeam: f.homeTeam,
+          awayTeam: f.awayTeam,
+          competition: f.competition,
+          competitionCode: LEAGUE_CODES[league].code,
+          kickoff: f.kickoff.toISOString(),
+          status: f.status,
+          venue: f.venue,
+          odds: undefined,
+        }));
+        lastScraped = scrapedFixtures[0]?.scrapedAt;
       } catch (scraperError) {
         console.error('Scraper failed, falling back to API:', scraperError);
       }
     }
 
-    // Fallback to football-data.org API
-    if (!source || source === 'auto' || source === 'api') {
+    let apiFixtures: any[] = [];
+    if (apiEnabled) {
       const fixtures = await fetchUpcomingFixtures(league, limit);
-      const filteredFixtures = hasDaysWindow
+      apiFixtures = hasDaysWindow
         ? fixtures.filter((f) => new Date(f.kickoff) <= (cutoffDate as Date))
         : fixtures;
-
-      return NextResponse.json(
-        {
-          success: true,
-          league,
-          leagueInfo: LEAGUE_CODES[league],
-          count: filteredFixtures.length,
-          fixtures: filteredFixtures,
-          source: filteredFixtures.length > 0 && filteredFixtures[0].id ? 'football-data-api' : 'static-fallback',
-        },
-        {
-          headers: {
-            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
-          },
-        }
-      );
     }
+
+    const combinedFixtures = mergeFixtures(scraperFixtures, apiFixtures).slice(0, limit);
+
+    return NextResponse.json(
+      {
+        success: true,
+        league,
+        leagueInfo: LEAGUE_CODES[league],
+        count: combinedFixtures.length,
+        fixtures: combinedFixtures,
+        source: scraperFixtures.length > 0 && apiFixtures.length > 0
+          ? 'merged'
+          : scraperFixtures.length > 0
+            ? 'web-scraper'
+            : apiFixtures.length > 0 && apiFixtures[0].id
+              ? 'football-data-api'
+              : 'static-fallback',
+        lastScraped,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+        },
+      }
+    );
 
     return NextResponse.json(
       { error: 'Invalid source parameter' },
