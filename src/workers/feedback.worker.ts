@@ -98,8 +98,23 @@ const worker = new Worker(
       console.log(`   Market: ${prediction.market}, Pick: ${prediction.pick}`);
       console.log(`   Kickoff: ${prediction.kickoffTimeUTC.toISOString()}`);
       
-      // Run AI analysis
-      const analysis = await analyzePrediction(prediction);
+      // Run AI analysis with error handling
+      let analysis;
+      try {
+        analysis = await analyzePrediction(prediction);
+      } catch (analysisError) {
+        console.error(`❌ Analysis failed for prediction ${prediction.id}:`, analysisError);
+        
+        // Create error feedback instead of crashing the worker
+        const errorMessage = analysisError instanceof Error ? analysisError.message : 'Unknown analysis error';
+        await prisma.prediction.update({
+          where: { id: prediction.id },
+          data: { status: 'failed' },
+        });
+        
+        console.log(`⚠️  Prediction ${prediction.id} marked as failed`);
+        return; // Skip to next job
+      }
 
       // Store feedback in database
       const feedback = await prisma.feedback.create({

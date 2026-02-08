@@ -262,8 +262,30 @@ async function generateAIAnalysis(
   });
 
   if (!aiPrediction) {
-    console.error('❌ AI prediction failed - no mock fallback');
-    throw new Error('AI analysis unavailable - please configure OPENROUTER_API_KEY');
+    console.warn('⚠️  AI prediction unavailable - generating mock analysis');
+    // Generate minimal analysis when AI fails
+    const baseAnalysis: AnalysisResult = {
+      summary: `Unable to generate AI analysis at this time. ${homeTeamName} vs ${awayTeamName} - ${competition}`,
+      strengths: ['Prediction received'],
+      risks: ['AI analysis temporarily unavailable'],
+      missingChecks: [],
+      contradictions: [],
+      keyFactors: [],
+      whatWouldChangeMyMind: [],
+      dataQualityNotes: ['AI service temporarily unavailable'],
+      confidenceExplanation: 'Unable to calculate due to service availability',
+      confidenceScore: 0.5,
+      citations: [],
+      llmModel: 'unavailable',
+      processingTimeMs: Date.now() - startTime,
+    };
+    
+    const validation = validateFeedback(baseAnalysis);
+    return {
+      ...baseAnalysis,
+      validationIssues: validation.issues,
+      validationSuggestions: validation.suggestions,
+    };
   }
 
   console.log(`✅ BETTING ANALYSIS: ${aiPrediction.prediction} (${(aiPrediction.confidence * 100).toFixed(0)}% confident) - ${aiPrediction.recommendedBet}`);
