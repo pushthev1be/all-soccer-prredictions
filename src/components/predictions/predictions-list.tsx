@@ -56,16 +56,23 @@ export default function PredictionsList({ userId }: PredictionsListProps) {
   const fetchPredictions = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch("/api/predictions?limit=100");
       
       if (!response.ok) {
-        throw new Error("Failed to fetch predictions");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.error || errorData.message || `HTTP ${response.status}`;
+        console.error("❌ Predictions API error:", response.status, errorData);
+        throw new Error(`Failed to fetch predictions: ${errorMsg}`);
       }
       
       const data = await response.json();
-      setPredictions(data.predictions);
+      console.log("✅ Predictions loaded:", data.predictions?.length || 0, "items");
+      setPredictions(data.predictions || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load predictions");
+      const message = err instanceof Error ? err.message : "Failed to load predictions";
+      console.error("❌ Fetch error:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
