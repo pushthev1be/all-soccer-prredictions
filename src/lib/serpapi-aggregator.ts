@@ -129,9 +129,14 @@ class SerpAPIAggregator {
         
         // Handle specific error codes
         if (response.status === 429) {
-          console.error('⚠️ Rate limit exceeded - slow down requests');
+          console.error('⚠️ Rate limit exceeded - SerpAPI quota exhausted, gracefully degrading');
+          // Return null to allow fallback to Football-Data.org
+          return null;
         } else if (response.status === 401) {
           console.error('⚠️ Invalid API key');
+        } else if (response.status === 403) {
+          console.error('⚠️ SerpAPI account quota exceeded or access denied');
+          return null;
         }
         
         throw new Error(`SerpAPI error: ${response.status}`);

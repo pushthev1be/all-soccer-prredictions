@@ -126,14 +126,23 @@ class SerpAPISportsService {
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`SerpAPI request failed: ${response.status} ${response.statusText}`);
+        const statusCode = response.status;
+        const statusText = response.statusText;
+        
+        // Handle quota exhaustion gracefully
+        if (statusCode === 429 || statusCode === 403) {
+          console.error(`⚠️ SerpAPI quota/rate limit error [${statusCode}]: ${statusText}`);
+          return null; // Return null instead of throwing to allow fallback
+        }
+        
+        throw new Error(`SerpAPI request failed: ${statusCode} ${statusText}`);
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
       console.error('SerpAPI request error:', error);
-      throw error;
+      return null; // Return null to allow graceful fallback
     }
   }
 

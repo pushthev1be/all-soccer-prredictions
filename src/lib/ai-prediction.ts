@@ -69,7 +69,7 @@ async function callOpenRouter(model: string, prompt: string): Promise<AIPredicto
         },
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1200, // Increased from 500 to accommodate full JSON response without truncation
     },
     {
       headers: {
@@ -149,7 +149,30 @@ async function callOpenRouter(model: string, prompt: string): Promise<AIPredicto
 
     return prediction;
   } catch (parseError) {
-    console.error('JSON parse error:', parseError, 'Raw:', jsonStr.substring(0, 200));
+    // Handle truncated JSON - try to repair incomplete objects
+    console.warn('JSON parse failed, attempting repair:', (parseError as Error).message);
+    
+    // Try to find the last valid closing brace
+    const lastBrace = jsonStr.lastIndexOf('}');
+    const lastBracket = jsonStr.lastIndexOf(']');
+    const lastValidPos = Math.max(lastBrace, lastBracket);
+    
+    if (lastValidPos > 10) {
+      const repairedStr = jsonStr.substring(0, lastValidPos + 1);
+      try {
+        console.log('🔧 Attempting repair from truncated response...');
+        const prediction = JSON.parse(repairedStr) as AIPredictor;
+        
+        if (prediction.prediction && typeof prediction.confidence === 'number') {
+          console.log('✅ Successfully repaired truncated response');
+          return prediction;
+        }
+      } catch (repairError) {
+        console.error('Repair failed:', repairError);
+      }
+    }
+    
+    console.error('JSON parse error (unrecoverable):', parseError, 'Raw:', jsonStr.substring(0, 300));
     return null;
   }
 }
