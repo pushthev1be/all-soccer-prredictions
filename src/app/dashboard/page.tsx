@@ -16,27 +16,44 @@ export default async function DashboardPage() {
 
   const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
 
-  // Fetch real user stats
+  // Fetch real user stats with error handling
   const userId = session.user.id;
-  const [total, completed, pending] = await Promise.all([
-    prisma.prediction.count({ where: { userId } }),
-    prisma.prediction.count({ where: { userId, status: "completed" } }),
-    prisma.prediction.count({ where: { userId, status: "pending" } }),
-  ]);
+  let total = 0, completed = 0, pending = 0;
+  
+  try {
+    [total, completed, pending] = await Promise.all([
+      prisma.prediction.count({ where: { userId } }),
+      prisma.prediction.count({ where: { userId, status: "completed" } }),
+      prisma.prediction.count({ where: { userId, status: "pending" } }),
+    ]);
+  } catch (error) {
+    console.error('Dashboard stats fetch failed:', error);
+    // Gracefully degrade - show zero stats instead of crashing
+    total = 0;
+    completed = 0;
+    pending = 0;
+  }
 
-  // Fetch recent predictions for the activity section
-  const recentPredictions = await prisma.prediction.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    include: {
-      feedback: {
-        select: {
-          confidenceScore: true,
+  // Fetch recent predictions for the activity section with error handling
+  let recentPredictions: any[] = [];
+  try {
+    recentPredictions = await prisma.prediction.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        feedback: {
+          select: {
+            confidenceScore: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error('Recent predictions fetch failed:', error);
+    // Gracefully degrade - show empty list
+    recentPredictions = [];
+  }
 
   const stats = {
     total,

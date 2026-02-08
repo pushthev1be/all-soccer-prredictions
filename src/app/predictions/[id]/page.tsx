@@ -18,21 +18,27 @@ export default async function PredictionDetailPage({ params }: PageProps) {
     redirect('/auth/signin');
   }
 
-  const prediction = await prisma.prediction.findUnique({
-    where: {
-      id: id,
-      userId: session.user.id,
-    },
-    include: {
-      feedback: true,
-      user: {
-        select: {
-          name: true,
-          email: true,
+  let prediction;
+  try {
+    prediction = await prisma.prediction.findUnique({
+      where: {
+        id: id,
+        userId: session.user.id,
+      },
+      include: {
+        feedback: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error('Failed to fetch prediction:', error);
+    notFound();
+  }
 
   if (!prediction) {
     notFound();
