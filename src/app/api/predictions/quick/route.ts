@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { SAMPLE_FIXTURES } from "@/lib/fixtures-sample";
 import { fetchLiveOdds } from "@/lib/odds-api";
 import { addPredictionJob } from "@/lib/queue";
-
-const prisma = new PrismaClient();
 
 const quickSchema = z.object({
   fixtureId: z.string(),

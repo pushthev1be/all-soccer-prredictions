@@ -1,10 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
-import { PrismaClient } from '@prisma/client';
 import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import PredictionDetail from '@/components/predictions/prediction-detail';
-
-const prisma = new PrismaClient();
 
 interface PageProps {
   params: Promise<{

@@ -5,9 +5,7 @@ import Link from "next/link";
 import { BarChart3, Zap } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { LiveScores } from "@/components/live-scores/live-scores";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);

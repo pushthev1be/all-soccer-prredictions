@@ -1,15 +1,13 @@
 import 'dotenv/config';
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
-import { PrismaClient } from '@prisma/client';
 import { analyzePrediction } from '@/lib/ai-analyzer';
+import { prisma } from '@/lib/prisma';
 import { normalizeTeamName, getTeamId } from '@/lib/team-normalizer';
 
 // Log env var status for debugging
 console.log('🔑 OPENROUTER_API_KEY configured:', !!process.env.OPENROUTER_API_KEY);
 console.log('🔑 REDIS_URL configured:', !!process.env.REDIS_URL);
-
-const prisma = new PrismaClient();
 
 // Redis connection with Upstash support
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';

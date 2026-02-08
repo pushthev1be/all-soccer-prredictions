@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { marketOptions } from "@/lib/prediction-constants";
 import { addPredictionJob } from "@/lib/queue";
 import { analyzePrediction } from "@/lib/ai-analyzer";
-
-const prisma = new PrismaClient();
 
 // Validation schema
 const predictionSchema = z.object({
