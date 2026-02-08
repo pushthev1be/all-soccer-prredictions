@@ -32,6 +32,25 @@ export interface AIPredictor {
   recommendedBet: string;
   keyFactors: string[];
   risks: string[];
+  scorelinePrediction?: string;
+  likelyScorers?: {
+    home: string[];
+    away: string[];
+  };
+  alternativeBets?: Array<{
+    bet: string;
+    rationale: string;
+  }>;
+  alternativeViews?: {
+    bullish: string;
+    bearish: string;
+    neutral: string;
+    contrarian: string;
+  };
+  confidenceRange?: {
+    low: number;
+    high: number;
+  };
 }
 
 // Helper to delay between retries
@@ -168,13 +187,66 @@ Provide a structured prediction in valid JSON format (no markdown, no code block
 {
   "prediction": "Home Win" or "Draw" or "Away Win",
   "confidence": 0.0-1.0 (decimal number),
-  "reasoning": "2-3 sentence explanation",
-  "recommendedBet": "specific betting recommendation",
-  "keyFactors": ["factor1", "factor2", "factor3"],
-  "risks": ["risk1", "risk2"]
+  "reasoning": "2-3 sentence explanation with specific stats and reasoning",
+  "recommendedBet": "specific betting recommendation with bet size guidance",
+  "keyFactors": ["Statistical fact with number", "Tactical advantage explained", "Context-specific factor"],
+  "risks": ["Risk with specific consequence", "Counter-argument with evidence", "Wildcard factor"],
+  "scorelinePrediction": "e.g., 2-1 (expected result based on xG)",
+  "likelyScorers": {
+    "home": ["Player A (reason)", "Player B (reason)"],
+    "away": ["Player C (reason)"]
+  },
+  "alternativeBets": [
+    { "bet": "Over 2.5 Goals", "rationale": "Because total xG = X + Y which favors over" },
+    { "bet": "Home -0.5", "rationale": "When home team's expected advantage is +0.8 goals" }
+  ],
+  "alternativeViews": {
+    "bullish": "All factors align: form + odds + tactical setup = conviction play",
+    "bearish": "Market might be undervaluing [specific risk]; consider the fade",
+    "neutral": "Too much uncertainty; edges unclear; recommend skip or minimal sizing",
+    "contrarian": "Public perception vs. reality: the consensus undervalues [aspect]"
+  },
+  "confidenceRange": { "low": 0.60, "high": 0.72 }
 }
 
-Be data-driven and specific. Consider form, head-to-head, odds implications, and tactical factors.`;
+**ANALYSIS DEPTH REQUIREMENTS:**
+1. **Statistical Anchors**: 
+   - Reference specific metrics: xG, possession%, shots on target, recent form (W-D-L record)
+   - Use odds to imply market probability and compare to your model
+   - Include head-to-head context with actual results, not just "has winning record"
+
+2. **Tactical Nuances**: 
+   - Identify specific matchups (press vs counter-attack, set pieces, wing dominance)
+   - Flag formations and how they clash (e.g., "3-5-2 high-press home vs 4-2-3-1 counter")
+   - Assess vulnerable points (e.g., "Away team's fullbacks struggle vs pace")
+
+3. **Context Awareness**: 
+   - Home advantage impact (typically 0.3-0.5 xG boost)
+   - Match importance (derby, relegation battle, title decider)
+   - Schedule fatigue (mid-week fixture before big weekend game)
+   - Injuries to key players and tactical implications
+
+4. **Market Context**: 
+   - If odds = 2.0 (50% implied), but your model = 55%, that's +5% value
+   - Explain whether market has missed something or if you're overconfident
+   - Reference public betting patterns if known (sharp vs public divergence)
+
+5. **Alternative Bets**: 
+   - Offer 1–2 hedges (e.g., if backing home win, suggest small each-way to draw)
+   - Specify total goals, corners, cards based on tactical tendencies
+
+**CRITICAL THINKING:**
+- Weakest link: What's the biggest flaw in this analysis?
+- Change of mind trigger: What specific event/stat would make you flip (e.g., "If Team A goes up 2-0 before minute 30, reassess away team value")
+- Hidden swings: Weather, referee tendencies, late squad changes, public sentiment driving odds
+
+**Scoring Guidance:**
+- 0.70+: "Large" conviction, back with confidence
+- 0.55-0.70: "Medium" sizing, solid edge but not a lock
+- 0.50-0.55: "Small" sizing, minimal edge
+- <0.50: "Avoid" or fade the market consensus
+
+Be obsessively data-driven. Cite numbers. Explain logic. Make specific calls, not hedged statements.`;
 
   // Try each model with retries
   for (const model of MODELS) {

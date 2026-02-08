@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_DIRECT")
 }
 
 model User {
@@ -136,6 +137,17 @@ model Feedback {
   dataQualityNotes        String[]
   confidenceExplanation   String
   confidenceScore         Float
+  recommendedBet          String?
+  qualityTier             String?
+  dataCompleteness        Int?
+  actionableInsights      Json?
+  confidenceIntervals     Json?
+  alternativeBets         Json?
+  alternativeViews        Json?
+  numbersSummary          Json?
+  historicalComparisons   Json?
+  validationIssues        String[] @default([])
+  validationSuggestions   String[] @default([])
 
   // Rich analysis fields
   teamComparison          Json?
@@ -144,6 +156,8 @@ model Feedback {
   marketInsight           Json?
   tacticalAnalysis        String[]
   injuryNews              String[]
+  scorelinePrediction     String?
+  likelyScorers           Json?
   
   llmModel                String
   llmPromptVersion        String

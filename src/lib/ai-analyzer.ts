@@ -5,8 +5,17 @@ import { generateAIPrediction } from './ai-prediction';
 import { normalizeTeamName, getTeamId } from './team-normalizer';
 import { serpApiAggregator, AggregatedMatchData } from './serpapi-aggregator';
 import { serpApiSports } from './serpapi-sports';
+import {
+  generateConfidenceBreakdown,
+  generateNumbersSummary,
+  generateComparativeAnalysis,
+  generateAlternativeViews,
+  validateFeedback,
+  generateSpecificFactors,
+  ConfidenceBreakdown,
+} from './feedback-enhancements';
 
-interface Citation {
+export interface Citation {
   sourceUrl: string;
   sourceProvider: string;
   sourceTitle?: string;
@@ -15,7 +24,7 @@ interface Citation {
   excerpt: string;
 }
 
-interface AnalysisResult {
+export interface AnalysisResult {
   summary: string;
   strengths: string[];
   risks: string[];
@@ -26,9 +35,46 @@ interface AnalysisResult {
   dataQualityNotes: string[];
   confidenceExplanation: string;
   confidenceScore: number;
+  recommendedBet?: string;
+  qualityTier?: 'basic' | 'enhanced' | 'premium';
+  dataCompleteness?: number;
+  actionableInsights?: {
+    betSizing: 'small' | 'medium' | 'large' | 'avoid';
+    timeframe: 'pre-match' | 'live' | 'avoid';
+    hedgeOptions: string[];
+  };
+  confidenceIntervals?: {
+    lowerBound: number;
+    upperBound: number;
+    volatility: 'low' | 'medium' | 'high';
+  };
+  alternativeBets?: Array<{ bet: string; rationale: string }>;
+  alternativeViews?: {
+    bullish: string;
+    bearish: string;
+    neutral: string;
+    contrarian: string;
+  };
+  numbersSummary?: {
+    metrics: Record<string, string | number | null>;
+    probabilities: Record<string, string | number | null>;
+    valueIndicators: Record<string, string | number | null>;
+  };
+  historicalComparisons?: {
+    similarMatches: string[];
+    winRateInContext?: string;
+    historicalOutcomes?: string[];
+  };
+  validationIssues?: string[];
+  validationSuggestions?: string[];
   citations: Citation[];
   llmModel: string;
   processingTimeMs: number;
+  scorelinePrediction?: string;
+  likelyScorers?: {
+    home: string[];
+    away: string[];
+  };
   // Enhanced fields - restructured for maximum decision-making impact
   teamComparison?: {
     home: {
@@ -74,6 +120,68 @@ const ENABLE_AI_ANALYSIS = process.env.ENABLE_AI_ANALYSIS === 'true' || process.
 
 function canonicalIdToName(id: string): string {
   return (id || '').replace('custom:', '').replace(/-/g, ' ').trim();
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function computeDataCompleteness(fixtureData: FixtureData, serpData: AggregatedMatchData | null): number {
+  let score = 0;
+  if (fixtureData.odds) score += 25;
+  if (fixtureData.homeForm && fixtureData.awayForm) score += 25;
+  if (fixtureData.headToHead) score += 20;
+  if (serpData) score += 30;
+  return clamp(score, 0, 100);
+}
+
+function computeQualityTier(score: number): 'basic' | 'enhanced' | 'premium' {
+  if (score < 35) return 'basic';
+  if (score < 70) return 'enhanced';
+  return 'premium';
+}
+
+function computeConfidenceIntervals(confidence: number, dataCompleteness: number) {
+  const variance = dataCompleteness > 70 ? 0.05 : dataCompleteness > 40 ? 0.08 : 0.12;
+  return {
+    lowerBound: clamp(confidence - variance, 0, 1),
+    upperBound: clamp(confidence + variance, 0, 1),
+    volatility: dataCompleteness > 70 ? 'low' as const : dataCompleteness > 40 ? 'medium' as const : 'high' as const,
+  };
+}
+
+function computeActionableInsights(confidence: number, dataCompleteness: number) {
+  const betSizing = confidence > 0.7 && dataCompleteness > 60 ? 'large'
+    : confidence > 0.58 ? 'medium'
+    : confidence > 0.5 ? 'small'
+    : 'avoid';
+  const timeframe = 'pre-match' as const;
+  return {
+    betSizing: betSizing as 'small' | 'medium' | 'large' | 'avoid',
+    timeframe,
+    hedgeOptions: [],
+  };
+}
+
+function buildNumbersSummary(fixtureData: FixtureData) {
+  const odds = fixtureData.odds;
+  return {
+    metrics: {
+      homeGoalsFor: fixtureData.homeForm?.goalsFor ?? null,
+      awayGoalsFor: fixtureData.awayForm?.goalsFor ?? null,
+      homeGoalsAgainst: fixtureData.homeForm?.goalsAgainst ?? null,
+      awayGoalsAgainst: fixtureData.awayForm?.goalsAgainst ?? null,
+    },
+    probabilities: {
+      homeWin: odds?.homeWin ? `${(1 / odds.homeWin * 100).toFixed(1)}%` : null,
+      draw: odds?.draw ? `${(1 / odds.draw * 100).toFixed(1)}%` : null,
+      awayWin: odds?.awayWin ? `${(1 / odds.awayWin * 100).toFixed(1)}%` : null,
+    },
+    valueIndicators: {
+      oddsFairness: odds ? 'Implied probability based on odds' : 'No odds data',
+      marketInefficiency: 'N/A',
+    },
+  };
 }
 
 export async function analyzePrediction(prediction: Prediction): Promise<AnalysisResult> {
@@ -161,11 +269,25 @@ async function generateAIAnalysis(
   console.log(`✅ BETTING ANALYSIS: ${aiPrediction.prediction} (${(aiPrediction.confidence * 100).toFixed(0)}% confident) - ${aiPrediction.recommendedBet}`);
 
   const citations = generateCitations(fixtureData, serpData);
+  const dataCompleteness = computeDataCompleteness(fixtureData, serpData);
+  const qualityTier = computeQualityTier(dataCompleteness);
+  const confidenceIntervals = computeConfidenceIntervals(aiPrediction.confidence, dataCompleteness);
+  const actionableInsights = computeActionableInsights(aiPrediction.confidence, dataCompleteness);
+  const numbersSummary = buildNumbersSummary(fixtureData);
+  if (fixtureData.odds) {
+    const implied = aiPrediction.prediction === 'Home Win'
+      ? (1 / fixtureData.odds.homeWin)
+      : aiPrediction.prediction === 'Away Win'
+        ? (1 / fixtureData.odds.awayWin)
+        : (1 / fixtureData.odds.draw);
+    const edgeScore = clamp(aiPrediction.confidence - implied, -1, 1);
+    (numbersSummary.valueIndicators as any).edgeScore = `${(edgeScore * 100).toFixed(1)}% vs implied`;
+  }
 
   // Enhanced gambling-focused analysis
   const gamblingInsights = serpData ? extractGamblingInsights(serpData) : null;
 
-  return {
+  const baseAnalysis: AnalysisResult = {
     summary: `🎯 ${aiPrediction.reasoning}\n\n💰 RECOMMENDED BET: ${aiPrediction.recommendedBet}\n${serpData ? `\n📊 MARKET MOOD: ${serpData.marketMood}` : ''}`,
     
     strengths: [
@@ -217,9 +339,28 @@ async function generateAIAnalysis(
     confidenceExplanation: `${aiPrediction.prediction} with ${(aiPrediction.confidence * 100).toFixed(0)}% confidence. ${aiPrediction.reasoning}${gamblingInsights ? `\n\n${gamblingInsights.explanation}` : ''}`,
     
     confidenceScore: aiPrediction.confidence,
+    recommendedBet: aiPrediction.recommendedBet,
+    qualityTier,
+    dataCompleteness,
+    actionableInsights,
+    confidenceIntervals,
+    alternativeBets: aiPrediction.alternativeBets,
+    alternativeViews: aiPrediction.alternativeViews,
+    numbersSummary,
+    historicalComparisons: fixtureData.headToHead?.lastMeetings
+      ? {
+          similarMatches: fixtureData.headToHead.lastMeetings.map((m: any) => `${m.date}: ${m.score}`),
+          winRateInContext: fixtureData.headToHead.matches
+            ? `${Math.round((fixtureData.headToHead.homeWins / fixtureData.headToHead.matches) * 100)}% home win rate in H2H`
+            : undefined,
+          historicalOutcomes: fixtureData.headToHead.lastMeetings.map((m: any) => m.winner),
+        }
+      : { similarMatches: [] },
     citations,
     llmModel: 'mistral-7b-instruct (OpenRouter) + SerpAPI Multi-Source',
     processingTimeMs: Date.now() - startTime,
+    ...(aiPrediction.scorelinePrediction && { scorelinePrediction: aiPrediction.scorelinePrediction }),
+    ...(aiPrediction.likelyScorers && { likelyScorers: aiPrediction.likelyScorers }),
 
     // CRITICAL DECISION DATA - Consolidated for maximum impact
     teamComparison: {
@@ -291,6 +432,47 @@ async function generateAIAnalysis(
         ].filter((item): item is string => item !== null),
       },
       bottomLine: aiPrediction.keyFactors[0] || 'Analysis based on available data',
+    },
+  };
+
+  const validation = validateFeedback(baseAnalysis);
+  const confidenceBreakdown = generateConfidenceBreakdown(
+    aiPrediction.confidence,
+    dataCompleteness,
+    !!serpData
+  );
+  const enumeratedNumbersSummary = generateNumbersSummary(
+    homeTeamName,
+    awayTeamName,
+    fixtureData.homeForm,
+    fixtureData.awayForm,
+    fixtureData.odds
+  );
+  const comparativeAnalysis = generateComparativeAnalysis(
+    homeTeamName,
+    awayTeamName,
+    aiPrediction.confidence,
+    fixtureData.odds
+  );
+  const enhancedAlternativeViews = generateAlternativeViews(
+    aiPrediction.prediction,
+    aiPrediction.confidence,
+    aiPrediction.risks || [],
+    baseAnalysis.strengths
+  );
+
+  return {
+    ...baseAnalysis,
+    validationIssues: validation.issues,
+    validationSuggestions: validation.suggestions,
+    numbersSummary: enumeratedNumbersSummary,
+    historicalComparisons: {
+      ...baseAnalysis.historicalComparisons,
+      ...comparativeAnalysis,
+    },
+    alternativeViews: {
+      ...baseAnalysis.alternativeViews,
+      ...enhancedAlternativeViews,
     },
   };
 }
@@ -516,7 +698,13 @@ function generateMockAnalysis(
   const homeTeam = fixtureData.homeTeam || 'Home Team';
   const awayTeam = fixtureData.awayTeam || 'Away Team';
 
-  return {
+  const dataCompleteness = computeDataCompleteness(fixtureData, serpData);
+  const qualityTier = computeQualityTier(dataCompleteness);
+  const confidenceIntervals = computeConfidenceIntervals(0.5, dataCompleteness);
+  const actionableInsights = computeActionableInsights(0.5, dataCompleteness);
+  const numbersSummary = buildNumbersSummary(fixtureData);
+
+  const baseAnalysis: AnalysisResult = {
     summary: `🎯 BETTING ANALYSIS: ${prediction.market} - ${prediction.pick}\n\n💰 This is a ${prediction.market} play. ${serpData ? `Market mood: ${serpData.marketMood}` : 'Configure SerpAPI for live market intelligence.'}`,
     
     strengths: [
@@ -553,7 +741,36 @@ function generateMockAnalysis(
     
     confidenceExplanation: 'AI analysis not available. Configure OPENROUTER_API_KEY to enable intelligent predictions.',
     confidenceScore: 0.5,
+    recommendedBet: prediction.market ? `${prediction.market}: ${prediction.pick}` : 'Enable AI analysis for a suggested bet',
+    qualityTier,
+    dataCompleteness,
+    actionableInsights,
+    confidenceIntervals,
+    alternativeBets: [
+      { bet: 'Over 1.5 Goals', rationale: 'Safer total goals angle with limited data' },
+    ],
+    alternativeViews: {
+      bullish: 'If the favorite scores early, this bet strengthens quickly.',
+      bearish: 'If the underdog holds a low block, chances may be limited.',
+      neutral: 'Match likely stays tight until late if no early goal.',
+      contrarian: 'Market may be overreacting to recent results.',
+    },
+    numbersSummary,
+    historicalComparisons: fixtureData.headToHead?.lastMeetings
+      ? {
+          similarMatches: fixtureData.headToHead.lastMeetings.map((m: any) => `${m.date}: ${m.score}`),
+          winRateInContext: fixtureData.headToHead.matches
+            ? `${Math.round((fixtureData.headToHead.homeWins / fixtureData.headToHead.matches) * 100)}% home win rate in H2H`
+            : undefined,
+          historicalOutcomes: fixtureData.headToHead.lastMeetings.map((m: any) => m.winner),
+        }
+      : { similarMatches: [] },
     citations: generateCitations(fixtureData, serpData),
+    scorelinePrediction: fixtureData.odds ? '2-1' : undefined,
+    likelyScorers: {
+      home: fixtureData.homeTeam ? [`${fixtureData.homeTeam} Forward`] : ['Home Forward'],
+      away: fixtureData.awayTeam ? [`${fixtureData.awayTeam} Striker`] : ['Away Striker'],
+    },
     llmModel: 'Mock (AI disabled)',
     processingTimeMs: Date.now() - startTime,
 
@@ -603,5 +820,12 @@ function generateMockAnalysis(
       },
       bottomLine: 'Enable AI analysis for comprehensive tactical breakdown',
     },
+  };
+
+  const validation = validateFeedback(baseAnalysis);
+  return {
+    ...baseAnalysis,
+    validationIssues: validation.issues,
+    validationSuggestions: validation.suggestions,
   };
 }

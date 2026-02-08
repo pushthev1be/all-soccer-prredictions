@@ -207,6 +207,226 @@ export default function PredictionDetail({ prediction: initialPrediction }: Pred
               </div>
 
               <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                {/* AI Recommended Bet */}
+                {(prediction.feedback as any).recommendedBet && (
+                  <div className="bg-black text-white rounded-xl p-4 sm:p-5">
+                    <p className="text-[10px] sm:text-xs uppercase text-white/70 mb-1">AI Suggested Bet</p>
+                    <p className="text-sm sm:text-base font-bold tracking-wide">
+                      {(prediction.feedback as any).recommendedBet}
+                    </p>
+                  </div>
+                )}
+
+                {/* Data Quality + Confidence Range */}
+                {(((prediction.feedback as any).qualityTier || (prediction.feedback as any).dataCompleteness !== undefined) || (prediction.feedback as any).confidenceIntervals) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="bg-white border-2 border-black rounded-xl p-4">
+                      <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Data Quality</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm sm:text-base font-bold text-black">
+                          {(prediction.feedback as any).qualityTier || 'N/A'}
+                        </span>
+                        {(prediction.feedback as any).dataCompleteness !== undefined && (
+                          <span className="text-xs sm:text-sm text-gray-600">
+                            {(prediction.feedback as any).dataCompleteness}% complete
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-white border-2 border-black rounded-xl p-4">
+                      <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Confidence Range</p>
+                      <p className="text-sm sm:text-base font-bold text-black">
+                        {((prediction.feedback as any).confidenceIntervals?.lowerBound !== undefined && (prediction.feedback as any).confidenceIntervals?.upperBound !== undefined)
+                          ? `${(((prediction.feedback as any).confidenceIntervals.lowerBound as number) * 100).toFixed(0)}%–${(((prediction.feedback as any).confidenceIntervals.upperBound as number) * 100).toFixed(0)}%`
+                          : 'N/A'}
+                      </p>
+                      {(prediction.feedback as any).confidenceIntervals?.volatility && (
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                          Volatility: {(prediction.feedback as any).confidenceIntervals.volatility}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Alternative Bets */}
+                {Array.isArray((prediction.feedback as any).alternativeBets) && (prediction.feedback as any).alternativeBets.length > 0 && (
+                  <div className="bg-white border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">Alternative Bets</h3>
+                    <ul className="space-y-2 text-xs sm:text-sm text-gray-700">
+                      {(prediction.feedback as any).alternativeBets.slice(0, 2).map((item: any, index: number) => (
+                        <li key={`alt-bet-${index}`} className="flex items-start">
+                          <span className="text-black font-bold mr-2">•</span>
+                          <div>
+                            <div className="font-semibold text-black">{item.bet}</div>
+                            <div className="text-gray-600">{item.rationale}</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Alternative Angles */}
+                {(prediction.feedback as any).alternativeViews && (
+                  <div className="bg-gray-50 border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">Alternative Angles</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-xs font-bold text-green-700 mb-1">🐂 Bull Case</p>
+                        <p className="text-xs sm:text-sm text-green-800">{(prediction.feedback as any).alternativeViews.bullish}</p>
+                      </div>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-xs font-bold text-red-700 mb-1">🐻 Bear Case</p>
+                        <p className="text-xs sm:text-sm text-red-800">{(prediction.feedback as any).alternativeViews.bearish}</p>
+                      </div>
+                      <div className="bg-white border border-gray-200 rounded-lg p-3">
+                        <p className="text-xs font-bold text-gray-800 mb-1">⚖️ Neutral</p>
+                        <p className="text-xs sm:text-sm text-gray-700">{(prediction.feedback as any).alternativeViews.neutral}</p>
+                      </div>
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p className="text-xs font-bold text-yellow-700 mb-1">🧠 Contrarian</p>
+                        <p className="text-xs sm:text-sm text-yellow-800">{(prediction.feedback as any).alternativeViews.contrarian}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actionable Insights */}
+                {(prediction.feedback as any).actionableInsights && (
+                  <div className="bg-white border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">Actionable Insights</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Bet Sizing</p>
+                        <p className="text-sm sm:text-base font-bold text-black">
+                          {(prediction.feedback as any).actionableInsights.betSizing}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Timeframe</p>
+                        <p className="text-sm sm:text-base font-bold text-black">
+                          {(prediction.feedback as any).actionableInsights.timeframe}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Historical Context */}
+                {(prediction.feedback as any).historicalComparisons?.similarMatches?.length > 0 && (
+                  <div className="bg-white border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">Historical Context</h3>
+                    <ul className="space-y-1 text-xs sm:text-sm text-gray-700">
+                      {(prediction.feedback as any).historicalComparisons.similarMatches.slice(0, 4).map((item: string, index: number) => (
+                        <li key={`hist-${index}`} className="flex items-start">
+                          <span className="text-black font-bold mr-2">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {(prediction.feedback as any).historicalComparisons.winRateInContext && (
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
+                        {(prediction.feedback as any).historicalComparisons.winRateInContext}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* What the Numbers Say */}
+                {(prediction.feedback as any).numbersSummary && (
+                  <div className="bg-white border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">What the Numbers Say</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-2">Probabilities</p>
+                        <ul className="space-y-1 text-xs sm:text-sm text-gray-700">
+                          {Object.entries((prediction.feedback as any).numbersSummary.probabilities || {}).map(([key, value]: [string, any]) => (
+                            <li key={`prob-${key}`} className="flex justify-between">
+                              <span className="capitalize">{key}</span>
+                              <span className="font-semibold text-black">{value ?? 'N/A'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-2">Key Metrics</p>
+                        <ul className="space-y-1 text-xs sm:text-sm text-gray-700">
+                          {Object.entries((prediction.feedback as any).numbersSummary.metrics || {}).slice(0, 4).map(([key, value]: [string, any]) => (
+                            <li key={`metric-${key}`} className="flex justify-between">
+                              <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                              <span className="font-semibold text-black">{value ?? 'N/A'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Validation Notes */}
+                {Array.isArray((prediction.feedback as any).validationIssues) && (prediction.feedback as any).validationIssues.length > 0 && (
+                  <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-2">Validation Notes</h3>
+                    <ul className="space-y-1 text-xs sm:text-sm text-gray-700">
+                      {(prediction.feedback as any).validationIssues.slice(0, 3).map((issue: string, index: number) => (
+                        <li key={`validation-issue-${index}`} className="flex items-start">
+                          <span className="text-black font-bold mr-2">•</span>
+                          <span>{issue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Scoreline & Likely Scorers */}
+                {(((prediction.feedback as any).scorelinePrediction) || ((prediction.feedback as any).likelyScorers)) && (
+                  <div className="bg-white border-2 border-black rounded-xl p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-black mb-3">Scoreline & Likely Scorers</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-1">Predicted Scoreline</p>
+                        <p className="text-lg sm:text-2xl font-black text-black tracking-wider">
+                          {(prediction.feedback as any).scorelinePrediction || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-[10px] sm:text-xs text-gray-500 uppercase mb-2">Likely Scorers</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white border border-gray-200 rounded-md p-2">
+                            <p className="text-[10px] sm:text-xs font-semibold text-black mb-1">Home</p>
+                            <ul className="space-y-1 text-[10px] sm:text-xs text-gray-700">
+                              {(((prediction.feedback as any).likelyScorers?.home as string[]) || []).slice(0, 3).map((player: string, index: number) => (
+                                <li key={`home-scorer-${index}`} className="flex items-start">
+                                  <span className="text-black font-bold mr-1">•</span>
+                                  <span>{player}</span>
+                                </li>
+                              ))}
+                              {(!((prediction.feedback as any).likelyScorers?.home) || ((prediction.feedback as any).likelyScorers?.home?.length ?? 0) === 0) && (
+                                <li className="text-gray-400">No data</li>
+                              )}
+                            </ul>
+                          </div>
+                          <div className="bg-white border border-gray-200 rounded-md p-2">
+                            <p className="text-[10px] sm:text-xs font-semibold text-black mb-1">Away</p>
+                            <ul className="space-y-1 text-[10px] sm:text-xs text-gray-700">
+                              {(((prediction.feedback as any).likelyScorers?.away as string[]) || []).slice(0, 3).map((player: string, index: number) => (
+                                <li key={`away-scorer-${index}`} className="flex items-start">
+                                  <span className="text-black font-bold mr-1">•</span>
+                                  <span>{player}</span>
+                                </li>
+                              ))}
+                              {(!((prediction.feedback as any).likelyScorers?.away) || ((prediction.feedback as any).likelyScorers?.away?.length ?? 0) === 0) && (
+                                <li className="text-gray-400">No data</li>
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Team Form Comparison - Compact */}
                 <div className="bg-black rounded-xl p-4 sm:p-6">
                   <div className="grid grid-cols-2 gap-3 sm:gap-6">
