@@ -299,6 +299,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!session.user?.id) {
+      console.error("❌ Session exists but user.id is missing:", { user: session.user });
+      return NextResponse.json(
+        { error: "User ID not found in session" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = parseInt(searchParams.get("skip") || "0");
@@ -313,34 +321,49 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const predictions = await prisma.prediction.findMany({
-      where,
-      include: {
-        feedback: {
-          select: {
-            id: true,
-            summary: true,
-            confidenceScore: true,
-            createdAt: true,
-          },
-        },
-        sources: {
-          select: {
-            id: true,
-            provider: true,
-            title: true,
-          },
-          take: 2, // Limit sources in list view
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: limit,
-      skip: skip,
-    });
+    let predictions = [];
+    let total = 0;
 
-    const total = await prisma.prediction.count({ where });
+    try {
+      predictions = await prisma.prediction.findMany({
+        where,
+        include: {
+          feedback: {
+            select: {
+              id: true,
+              summary: true,
+              confidenceScore: true,
+              createdAt: true,
+            },
+          },
+          sources: {
+            select: {
+              id: true,
+              provider: true,
+              title: true,
+            },
+            take: 2, // Limit sources in list view
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip: skip,
+      });
+
+      total = await prisma.prediction.count({ where });
+    } catch (dbError) {
+      console.error("❌ Database query error in GET /api/predictions:", dbError);
+      return NextResponse.json(
+        { 
+          error: "Failed to fetch predictions from database",
+          message: dbError instanceof Error ? dbError.message : "Unknown database error",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 }
+      );
+    }
 
     // Get queue stats if available (with timeout to prevent hanging)
     let queueStats = null;
